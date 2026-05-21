@@ -1,0 +1,11 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+.idea/
+.vscode/
+*.bak
+
+# JSON state exports (per-user backups, don't commit anyone's logged data)
+rp-clone-*.json

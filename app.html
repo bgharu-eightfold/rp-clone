@@ -1,0 +1,2381 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RP Clone">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0e1116">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxODAiIGhlaWdodD0iMTgwIiB2aWV3Qm94PSIwIDAgMTgwIDE4MCI+PHJlY3Qgd2lkdGg9IjE4MCIgaGVpZ2h0PSIxODAiIHJ4PSIzNiIgZmlsbD0iIzBlMTExNiIvPjx0ZXh0IHg9IjkwIiB5PSIxMTgiIGZvbnQtZmFtaWx5PSItYXBwbGUtc3lzdGVtLEhlbHZldGljYSxBcmlhbCxzYW5zLXNlcmlmIiBmb250LXNpemU9IjY0IiBmb250LXdlaWdodD0iODAwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSIjNThhNmZmIj5SUDwvdGV4dD48L3N2Zz4=">
+<title>RP Clone — Workout Engine</title>
+<style>
+:root {
+  --bg:#0e1116; --panel:#161b22; --panel2:#1c2330; --border:#2a3140;
+  --fg:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --good:#3fb950;
+  --warn:#d29922; --bad:#f85149; --hl:#1f6feb;
+}
+* { box-sizing: border-box; }
+html, body { margin:0; padding:0; background:var(--bg); color:var(--fg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size:15px; line-height:1.4; }
+button { background:var(--panel2); color:var(--fg); border:1px solid var(--border);
+  border-radius:6px; padding:8px 12px; font-size:14px; cursor:pointer; font-family:inherit; }
+button:hover { background:var(--border); }
+button.primary { background:var(--hl); border-color:var(--hl); color:white; }
+button.primary:hover { background:#1158c7; }
+button.danger { background:transparent; color:var(--bad); border-color:var(--bad); }
+button.big { padding:14px 16px; font-size:15px; width:100%; text-align:left; }
+input, select { background:var(--panel2); color:var(--fg); border:1px solid var(--border);
+  border-radius:6px; padding:6px 8px; font-size:14px; font-family:inherit; }
+input[type=number] { width:64px; text-align:right; }
+input.compact { width:48px; padding:4px 6px; }
+nav { display:flex; gap:4px; padding:8px; background:var(--panel); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:10; overflow-x:auto; }
+nav button { background:transparent; border:1px solid transparent; padding:6px 12px; white-space:nowrap; }
+nav button.active { background:var(--panel2); border-color:var(--border); color:var(--accent); }
+.main { max-width: 720px; margin: 0 auto; padding: 12px; }
+.card { background:var(--panel); border:1px solid var(--border); border-radius:10px;
+  padding:14px; margin-bottom:12px; }
+h1 { font-size:18px; margin: 6px 0 12px; }
+h2 { font-size:15px; margin: 14px 0 8px; color:var(--muted); text-transform:uppercase;
+  letter-spacing:0.05em; font-weight:600; }
+.row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+.row.tight { gap:4px; }
+.spaced { justify-content:space-between; }
+.muted { color:var(--muted); font-size:13px; }
+.tag { display:inline-block; padding:2px 6px; border-radius:4px; font-size:11px;
+  background:var(--panel2); color:var(--muted); border:1px solid var(--border); }
+.tag.req { color:var(--accent); border-color:var(--accent); }
+.tag.float { color:var(--warn); border-color:var(--warn); }
+.tag.done { color:var(--good); border-color:var(--good); background: rgba(63,185,80,0.08); }
+.tag.under { color:var(--bad); border-color:var(--bad); }
+.tag.over { color:var(--warn); border-color:var(--warn); }
+.tag.in { color:var(--good); border-color:var(--good); }
+table { border-collapse: collapse; width:100%; font-size:14px; }
+th, td { padding:6px 8px; text-align:left; border-bottom:1px solid var(--border); }
+th { color:var(--muted); font-weight:600; font-size:12px; text-transform:uppercase; }
+.set-row { display:grid; grid-template-columns: 28px 78px 64px 56px 30px; gap:6px; align-items:center;
+  margin-bottom:4px; }
+.set-row label { font-size:12px; color:var(--muted); }
+.set-row .idx { color:var(--muted); font-size:13px; }
+.bar { height:8px; background:var(--panel2); border-radius:4px; overflow:hidden; position:relative; }
+.bar-fill { height:100%; }
+.bar-fill.in { background: var(--good); }
+.bar-fill.under { background: var(--bad); }
+.bar-fill.over { background: var(--warn); }
+.muscle-row { display:grid; grid-template-columns: 110px 1fr 90px; gap:8px; align-items:center;
+  padding:4px 0; }
+.legend { display:flex; gap:12px; font-size:12px; color:var(--muted); margin: 4px 0 8px; }
+.legend span { display:flex; align-items:center; gap:4px; }
+.legend i { width:10px; height:10px; border-radius:2px; display:inline-block; }
+.kpi { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:10px; }
+.kpi .box { background:var(--panel2); border:1px solid var(--border); border-radius:8px;
+  padding:8px; text-align:center; }
+.kpi .v { font-size:18px; font-weight:600; }
+.kpi .k { font-size:11px; color:var(--muted); text-transform:uppercase; }
+.exgroup { padding: 6px 0; border-bottom: 1px dashed var(--border); }
+.exgroup:last-child { border-bottom:none; }
+.fb-grid { display:grid; grid-template-columns: 120px 1fr; gap:8px; align-items:center; padding:4px 0; }
+.fb-grid > .scale { display:flex; gap:4px; flex-wrap:wrap; }
+.fb-grid button { padding:4px 8px; font-size:12px; min-width:24px; }
+.fb-grid button.sel { background:var(--hl); border-color:var(--hl); color:white; }
+.tile { display:flex; flex-direction:column; gap:4px; padding:14px; background:var(--panel2);
+  border:1px solid var(--border); border-radius:10px; margin-bottom:8px; cursor:pointer; }
+.tile:hover { border-color:var(--accent); }
+.tile.disabled { opacity:0.55; cursor:not-allowed; }
+.tile .title { font-size:16px; font-weight:600; }
+.tile .meta { display:flex; gap:10px; font-size:12px; color:var(--muted); }
+.warn-banner { background:rgba(210,153,34,0.12); border:1px solid var(--warn); border-radius:8px;
+  padding:8px 10px; margin-bottom:10px; font-size:13px; color:var(--fg); }
+@media (max-width: 480px) {
+  .set-row { grid-template-columns: 22px 1fr 1fr 1fr 26px; }
+  .muscle-row { grid-template-columns: 90px 1fr 70px; font-size:13px; }
+}
+</style>
+</head>
+<body>
+<nav>
+  <button data-view="today" class="active">Today</button>
+  <button data-view="block">Block</button>
+  <button data-view="history">History</button>
+  <button data-view="analytics">Analytics</button>
+  <button data-view="settings">Settings</button>
+  <div style="margin-left:auto; display:flex; align-items:center;">
+    <button data-action="open-user-menu" id="user-menu-btn">👤 <span id="user-menu-name">…</span> ▾</button>
+  </div>
+</nav>
+<div id="user-menu-pop" style="display:none;"></div>
+<div class="main" id="main"></div>
+
+<script>
+"use strict";
+
+// ============================================================================
+// ENGINE CONSTANTS
+// ============================================================================
+
+const MUSCLES = [
+  "back","biceps","chest","front_delts","side_delts","rear_delts",
+  "triceps","quads","hamstrings","glutes","calves","abs","traps","forearms"
+];
+const MUSCLE_LABEL = {
+  back:"Back", biceps:"Biceps", chest:"Chest", front_delts:"Front delts",
+  side_delts:"Side delts", rear_delts:"Rear delts", triceps:"Triceps",
+  quads:"Quads", hamstrings:"Hamstrings", glutes:"Glutes", calves:"Calves",
+  abs:"Abs", traps:"Traps", forearms:"Forearms"
+};
+
+const DEFAULT_LANDMARKS = {
+  back:        { MV:8, MEV:10, MAV:[14,22], MRV:25 },
+  biceps:      { MV:5, MEV:8,  MAV:[14,20], MRV:26 },
+  chest:       { MV:8, MEV:10, MAV:[12,20], MRV:22 },
+  front_delts: { MV:0, MEV:0,  MAV:[6,16],  MRV:18 },
+  side_delts:  { MV:8, MEV:10, MAV:[16,22], MRV:26 },
+  rear_delts:  { MV:0, MEV:6,  MAV:[10,20], MRV:25 },
+  triceps:     { MV:4, MEV:6,  MAV:[10,14], MRV:18 },
+  quads:       { MV:6, MEV:8,  MAV:[12,18], MRV:20 },
+  hamstrings:  { MV:3, MEV:6,  MAV:[10,16], MRV:20 },
+  glutes:      { MV:0, MEV:0,  MAV:[4,12],  MRV:16 },
+  calves:      { MV:6, MEV:8,  MAV:[12,16], MRV:20 },
+  abs:         { MV:0, MEV:0,  MAV:[16,20], MRV:25 },
+  traps:       { MV:0, MEV:0,  MAV:[12,20], MRV:26 },
+  forearms:    { MV:0, MEV:2,  MAV:[4,8],   MRV:10 }
+};
+
+const EXERCISES = {
+  pullup:           { name:"Pull-ups", primary:"back", cat:"std_compound", rep:[6,10], inc:2.5, bw:true },
+  db_row_incline:   { name:"Chest-supp incline DB row", primary:"back", cat:"std_compound", rep:[8,12], inc:2.5 },
+  cable_row_wide:   { name:"Seated cable row (wide neutral)", primary:"back", cat:"std_compound", rep:[8,12], inc:2.5 },
+  db_curl_standing: { name:"Standing DB curls", primary:"biceps", cat:"isolation", rep:[8,12], inc:1.25 },
+  preacher_curl:    { name:"Preacher DB curls", primary:"biceps", cat:"isolation", rep:[8,12], inc:1.25 },
+  smith_incline:    { name:"Incline Smith bench", primary:"chest", cat:"cns_compound", rep:[8,10], inc:2.5 },
+  cable_fly_hl:     { name:"High-to-low cable fly", primary:"chest", cat:"isolation", rep:[12,15], inc:1.25 },
+  db_ohp_standing:  { name:"Standing DB OHP", primary:"front_delts", cat:"cns_compound", rep:[8,10], inc:1.25 },
+  cable_lateral:    { name:"Cable lateral raise", primary:"side_delts", cat:"isolation", rep:[8,12], inc:1.25 },
+  face_pull:        { name:"Face pull (rope)", primary:"rear_delts", cat:"isolation", rep:[10,15], inc:1.25 },
+  tri_rope_ext:     { name:"Tricep rope extension", primary:"triceps", cat:"isolation", rep:[10,15], inc:1.25 },
+  tri_pushdown:     { name:"Tricep pushdown", primary:"triceps", cat:"isolation", rep:[8,12], inc:1.25 },
+  smith_squat:      { name:"Smith machine squat", primary:"quads", cat:"cns_compound", rep:[8,10], inc:2.5 },
+  rdl:              { name:"Romanian deadlift", primary:"hamstrings", cat:"cns_compound", rep:[8,10], inc:2.5 },
+  back_extension:   { name:"45° back extension", primary:"glutes", cat:"isolation", rep:[10,15], inc:2.5 },
+  hip_thrust:       { name:"Barbell hip thrust", primary:"glutes", cat:"cns_compound", rep:[8,12], inc:2.5 },
+  hamstring_curl:   { name:"Seated hamstring curl", primary:"hamstrings", cat:"isolation", rep:[12,15], inc:1.25 },
+  quad_extension:   { name:"Seated quad extension", primary:"quads", cat:"isolation", rep:[8,12], inc:1.25 },
+  seated_calf:      { name:"Seated calf raise", primary:"calves", cat:"isolation", rep:[10,15], inc:1.25 },
+  standing_calf:    { name:"Standing calf raise", primary:"calves", cat:"isolation", rep:[10,15], inc:2.5 },
+  // Chest alternatives
+  flat_bb_bench:        { name:"Flat barbell bench", primary:"chest", cat:"cns_compound", rep:[6,10], inc:2.5 },
+  flat_machine_press:   { name:"Flat machine chest press", primary:"chest", cat:"std_compound", rep:[8,12], inc:2.5 },
+  incline_machine_press:{ name:"Incline machine chest press", primary:"chest", cat:"std_compound", rep:[8,12], inc:2.5 },
+  decline_machine_press:{ name:"Decline machine chest press", primary:"chest", cat:"std_compound", rep:[8,12], inc:2.5 },
+  incline_db_bench:     { name:"Incline DB bench", primary:"chest", cat:"cns_compound", rep:[8,10], inc:1.25 },
+  flat_db_bench:        { name:"Flat DB bench", primary:"chest", cat:"cns_compound", rep:[8,10], inc:1.25 },
+  pec_deck:             { name:"Pec deck (machine fly)", primary:"chest", cat:"isolation", rep:[10,15], inc:2.5 },
+  pushup:               { name:"Push-ups", primary:"chest", cat:"std_compound", rep:[8,15], inc:1, bw:true },
+  cable_crossover:      { name:"Cable crossover", primary:"chest", cat:"isolation", rep:[12,15], inc:1.25 },
+  // Back alternatives
+  lat_pulldown_wide:    { name:"Wide-grip lat pulldown", primary:"back", cat:"std_compound", rep:[8,12], inc:2.5 },
+  lat_pulldown_neutral: { name:"Neutral-grip lat pulldown", primary:"back", cat:"std_compound", rep:[8,12], inc:2.5 },
+  bb_row:               { name:"Barbell row", primary:"back", cat:"cns_compound", rep:[6,10], inc:2.5 },
+  t_bar_row:            { name:"T-bar row", primary:"back", cat:"std_compound", rep:[8,12], inc:2.5 },
+  one_arm_db_row:       { name:"One-arm DB row", primary:"back", cat:"std_compound", rep:[8,12], inc:1.25 },
+  machine_row:          { name:"Machine row", primary:"back", cat:"std_compound", rep:[8,12], inc:2.5 },
+  chinup:               { name:"Chin-ups", primary:"back", cat:"std_compound", rep:[6,10], inc:2.5, bw:true },
+  // Shoulder alternatives
+  db_lateral:           { name:"DB lateral raise", primary:"side_delts", cat:"isolation", rep:[10,15], inc:1.25 },
+  machine_lateral:      { name:"Machine lateral raise", primary:"side_delts", cat:"isolation", rep:[10,15], inc:2.5 },
+  bb_ohp:               { name:"Barbell overhead press", primary:"front_delts", cat:"cns_compound", rep:[6,10], inc:2.5 },
+  machine_shoulder:     { name:"Machine shoulder press", primary:"front_delts", cat:"std_compound", rep:[8,12], inc:2.5 },
+  reverse_pec_deck:     { name:"Reverse pec deck", primary:"rear_delts", cat:"isolation", rep:[10,15], inc:2.5 },
+  rear_delt_fly_db:     { name:"DB rear delt fly", primary:"rear_delts", cat:"isolation", rep:[12,15], inc:1.25 },
+  // Triceps alternatives
+  ohead_tri_ext:        { name:"Overhead tricep extension", primary:"triceps", cat:"isolation", rep:[10,15], inc:1.25 },
+  skull_crusher:        { name:"Skull crusher", primary:"triceps", cat:"isolation", rep:[8,12], inc:1.25 },
+  close_grip_bench:     { name:"Close-grip bench", primary:"triceps", cat:"std_compound", rep:[6,10], inc:2.5 },
+  dips:                 { name:"Dips", primary:"triceps", cat:"std_compound", rep:[6,10], inc:2.5, bw:true },
+  // Biceps alternatives
+  incline_db_curl:      { name:"Incline DB curl", primary:"biceps", cat:"isolation", rep:[8,12], inc:1.25 },
+  cable_curl:           { name:"Cable curl", primary:"biceps", cat:"isolation", rep:[10,12], inc:1.25 },
+  hammer_curl:          { name:"Hammer curl", primary:"biceps", cat:"isolation", rep:[8,12], inc:1.25 },
+  spider_curl:          { name:"Spider curl", primary:"biceps", cat:"isolation", rep:[10,12], inc:1.25 },
+  // Leg alternatives
+  hack_squat:           { name:"Hack squat", primary:"quads", cat:"cns_compound", rep:[8,10], inc:2.5 },
+  leg_press:            { name:"Leg press", primary:"quads", cat:"std_compound", rep:[10,15], inc:5 },
+  bb_back_squat:        { name:"Barbell back squat", primary:"quads", cat:"cns_compound", rep:[5,8], inc:2.5 },
+  front_squat:          { name:"Front squat", primary:"quads", cat:"cns_compound", rep:[5,8], inc:2.5 },
+  bulgarian_split:      { name:"Bulgarian split squat", primary:"quads", cat:"std_compound", rep:[8,12], inc:1.25 },
+  lying_ham_curl:       { name:"Lying hamstring curl", primary:"hamstrings", cat:"isolation", rep:[10,15], inc:1.25 },
+  good_morning:         { name:"Good morning", primary:"hamstrings", cat:"cns_compound", rep:[8,10], inc:2.5 },
+  cable_kickback:       { name:"Cable kickback", primary:"glutes", cat:"isolation", rep:[12,15], inc:1.25 },
+  glute_machine:        { name:"Glute machine kickback", primary:"glutes", cat:"isolation", rep:[10,15], inc:2.5 },
+  leg_press_calf:       { name:"Calf raise on leg press", primary:"calves", cat:"isolation", rep:[10,15], inc:5 }
+};
+
+const RIR_FLOOR = { cns_compound: 1, std_compound: 0, isolation: 0 };
+const RIR_LADDER = [3, 2, 1, 0, 4.5];
+
+// Default weekly session counts. User can edit in Settings.
+const DEFAULT_WEEKLY_TARGETS = { Pull: 2, Push: 2, Legs: 1 };
+const SESSION_KINDS = ["Pull", "Push", "Legs"];
+
+// Block 1 template (same for every instance of a kind, within a week)
+const BLOCK_1_TEMPLATE = {
+  Pull: [
+    { exId:"pullup",           setsByWk:[3,3,3,3,2], required:true,  pullupRepDrop:1 },
+    { exId:"db_row_incline",   setsByWk:[3,3,3,3,2], required:true },
+    { exId:"cable_row_wide",   setsByWk:[3,3,3,3,2], required:true },
+    { exId:"db_curl_standing", setsByWk:[3,3,3,3,2], required:true },
+    { exId:"preacher_curl",    setsByWk:[3,3,3,3,2], required:false }
+  ],
+  Push: [
+    { exId:"smith_incline",    setsByWk:[4,4,4,4,2], required:true },
+    { exId:"cable_fly_hl",     setsByWk:[3,3,3,3,2], required:true },
+    { exId:"db_ohp_standing",  setsByWk:[3,3,3,3,2], required:true },
+    { exId:"cable_lateral",    setsByWk:[5,5,5,5,3], required:true },
+    { exId:"face_pull",        setsByWk:[4,4,4,4,2], required:true },
+    { exId:"tri_rope_ext",     setsByWk:[3,3,3,3,2], required:true },
+    { exId:"tri_pushdown",     setsByWk:[3,3,3,3,2], required:false }
+  ],
+  Legs: [
+    { exId:"smith_squat",      setsByWk:[3,3,4,4,2], required:true },
+    { exId:"rdl",              setsByWk:[3,3,3,3,2], required:true },
+    { exId:"back_extension",   setsByWk:[3,3,3,3,2], required:false },
+    { exId:"quad_extension",   setsByWk:[3,3,3,4,2], required:true },
+    { exId:"hamstring_curl",   setsByWk:[3,3,3,3,2], required:true },
+    { exId:"seated_calf",      setsByWk:[3,3,3,3,2], required:true },
+    { exId:"standing_calf",    setsByWk:[3,3,3,3,2], required:false }
+  ]
+};
+
+// ============================================================================
+// PURE ENGINE FUNCTIONS
+// ============================================================================
+
+function autoregDelta(fb, phase) {
+  phase = phase || "maintenance";
+  const { soreness=1, jointPain=0, perf=1, pump=2, workload=1 } = fb;
+  let r;
+  if (jointPain >= 2) r = { delta:-1, rotate:true, reason:"joint pain" };
+  else if (perf === 2 && soreness === 3) r = { delta:-2, deload:true, reason:"MRV exceeded" };
+  else if (perf === 2 || soreness === 3) r = { delta:-1, reason:"recovery alarm" };
+  else if (workload === 3) r = { delta:0, reason:"crushed — hold" };
+  else if (soreness === 2 && workload >= 2) r = { delta:0, reason:"under-recovered" };
+  else if (soreness <= 1 && pump === 3 && workload === 2) r = { delta:0, reason:"inside MAV sweet spot" };
+  else if (soreness <= 1 && pump >= 1 && pump <= 2 && workload >= 1 && workload <= 2)
+    r = { delta:1, reason:"room to grow" };
+  else if (soreness === 0 && pump <= 1 && workload <= 1) r = { delta:2, reason:"below MEV — under-dosed" };
+  else r = { delta:1, reason:"default mild progression" };
+  // Phase bias
+  if (phase === "cut") {
+    if (r.delta > 0) { r.delta = Math.max(0, r.delta - 1); r.reason += " · cut-damped"; }
+    else if (r.delta < 0) { r.delta -= 1; r.reason += " · cut-amplified"; }
+  } else if (phase === "surplus") {
+    if (r.delta < 0 && perf !== 2) { r.delta = Math.min(0, r.delta + 1); r.reason += " · surplus-lenient"; }
+  }
+  return r;
+}
+
+function volStatus(sets, lm) {
+  if (sets < lm.MV) return "under_MV";
+  if (sets < lm.MEV) return "under_MEV";
+  if (sets < lm.MAV[0]) return "above_MEV";
+  if (sets <= lm.MAV[1]) return "inside_MAV";
+  if (sets <= lm.MRV) return "near_MRV";
+  return "over_MRV";
+}
+function statusLabel(s) {
+  return { under_MV:"Under MV", under_MEV:"Under MEV", above_MEV:"Above MEV",
+    inside_MAV:"In MAV", near_MRV:"Near MRV", over_MRV:"Over MRV" }[s] || s;
+}
+function statusTagClass(s) {
+  if (s === "under_MV" || s === "under_MEV") return "under";
+  if (s === "over_MRV" || s === "near_MRV") return "over";
+  return "in";
+}
+
+function nextRx(exId, lastLogged, weekRIR, phase) {
+  phase = phase || "maintenance";
+  const ex = EXERCISES[exId];
+  const floor = RIR_FLOOR[ex.cat];
+  const target_RIR = Math.max(weekRIR, floor);
+  const [lo, hi] = ex.rep;
+  if (!lastLogged || !lastLogged.sets || lastLogged.sets.length === 0) {
+    return { load: null, reps: lo, rir: target_RIR, note: "first session — pick a working load" };
+  }
+  const sets = lastLogged.sets.filter(s => s.reps != null && s.weight != null);
+  if (sets.length === 0) return { load: null, reps: lo, rir: target_RIR };
+  const allHitHi = sets.every(s => s.reps >= hi);
+  const allHitLo = sets.every(s => s.reps >= lo);
+  const minRIR = Math.min(...sets.map(s => s.rir == null ? target_RIR : s.rir));
+  const planLoad = sets[0].weight;
+  // Phase-adjusted thresholds:
+  // cut: tighter (need RIR cushion before bumping)
+  // maintenance: standard
+  // surplus: looser
+  let loadCond, repCond;
+  if (phase === "cut") {
+    // Cut: require RIR cushion to bump load (load was clearly light); don't reward over-pushing
+    loadCond = allHitHi && minRIR > target_RIR;
+    repCond = allHitLo && minRIR >= target_RIR;
+  } else if (phase === "surplus") {
+    // Surplus: lenient — bump load even if user stopped a touch early
+    loadCond = allHitHi && minRIR <= target_RIR + 1;
+    repCond = allHitLo && minRIR <= target_RIR + 1;
+  } else {
+    // Maintenance: standard
+    loadCond = allHitHi && minRIR <= target_RIR;
+    repCond = allHitLo && minRIR <= target_RIR + 1;
+  }
+  if (loadCond) {
+    return { load: planLoad + ex.inc, reps: lo, rir: target_RIR, note: "topped range — added load" };
+  }
+  if (repCond) {
+    const lastMaxRep = Math.max(...sets.map(s => s.reps));
+    return { load: planLoad, reps: Math.min(lastMaxRep + 1, hi), rir: target_RIR, note: "add a rep" };
+  }
+  return { load: planLoad, reps: lo, rir: target_RIR, note: "hold load and reps" };
+}
+
+// ============================================================================
+// SLOT HELPERS — replaces day-of-week logic
+// ============================================================================
+
+function slotKey(kind, instance) { return `${kind}_${instance}`; }
+function parseSlotKey(k) {
+  if (k.startsWith("Custom_")) return { kind: "Custom", instance: 1 };
+  const i = k.lastIndexOf("_");
+  return { kind: k.slice(0, i), instance: +k.slice(i + 1) };
+}
+
+// Search all completed sessions (any kind) for the most recent occurrence of this exercise.
+// Used so a Custom session's logged sets feed into the next prescription via nextRx().
+function findLastCompletedExercise(state, exId) {
+  const block = state.currentBlock;
+  let best = null;
+  for (let w = block.lengthWeeks - 1; w >= 0; w--) {
+    const wk = block.prescriptions[w] || {};
+    for (const [sk, sess] of Object.entries(wk)) {
+      if (!sess.completedDate) continue;
+      const ex = (sess.exercises || []).find(e => e.exId === exId);
+      if (!ex) continue;
+      const logged = (ex.sets || []).filter(s => s.reps != null && s.weight != null);
+      if (logged.length === 0) continue;
+      if (!best || sess.completedDate > best.date) best = { date: sess.completedDate, sets: ex.sets };
+    }
+  }
+  return best ? { sets: best.sets } : null;
+}
+function allSlotKeysForWeek(weeklyTargets) {
+  return userKinds().flatMap(kind => {
+    const n = weeklyTargets[kind] || 0;
+    return Array.from({ length: n }, (_, i) => slotKey(kind, i + 1));
+  });
+}
+function pendingSlots(state, weekIdx) {
+  const wk = state.currentBlock.prescriptions[weekIdx] || {};
+  return allSlotKeysForWeek(state.currentBlock.weeklyTargets)
+    .filter(k => !(wk[k] && wk[k].completedDate));
+}
+function completedSlots(state, weekIdx) {
+  const wk = state.currentBlock.prescriptions[weekIdx] || {};
+  return Object.entries(wk)
+    .filter(([, s]) => s.completedDate)
+    .map(([k, s]) => ({ slotKey: k, ...s }));
+}
+function pendingInstancesOfKind(state, weekIdx, kind) {
+  return pendingSlots(state, weekIdx).filter(k => parseSlotKey(k).kind === kind);
+}
+function nextPendingInstanceOfKind(state, weekIdx, kind) {
+  const list = pendingInstancesOfKind(state, weekIdx, kind);
+  if (list.length === 0) return null;
+  return list.sort((a, b) => parseSlotKey(a).instance - parseSlotKey(b).instance)[0];
+}
+
+// Find the most recent completed slot of a given kind (anywhere in history).
+// Returns { weekIdx, slotKey, date } or null.
+function findLastCompletedOfKind(state, kind, upToWeek = null, beforeInstance = null) {
+  const block = state.currentBlock;
+  let best = null;
+  for (let w = (upToWeek == null ? block.lengthWeeks - 1 : upToWeek); w >= 0; w--) {
+    const wk = block.prescriptions[w] || {};
+    for (const [sk, sess] of Object.entries(wk)) {
+      const parsed = parseSlotKey(sk);
+      if (parsed.kind !== kind) continue;
+      if (!sess.completedDate) continue;
+      if (w === upToWeek && beforeInstance != null && parsed.instance >= beforeInstance) continue;
+      if (!best || sess.completedDate > best.date) {
+        best = { weekIdx: w, slotKey: sk, date: sess.completedDate, session: sess };
+      }
+    }
+  }
+  return best;
+}
+
+function daysSinceISO(iso) {
+  if (!iso) return null;
+  return Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+}
+function isoDate(d) { return d.toISOString().slice(0, 10); }
+function startOfWeek(d) {
+  const x = new Date(d);
+  const day = x.getDay() || 7;
+  x.setDate(x.getDate() - (day - 1));
+  x.setHours(0, 0, 0, 0);
+  return x;
+}
+
+// ============================================================================
+// PRESCRIPTION BUILDING
+// ============================================================================
+
+function buildSlotSession(state, weekIdx, kind, instance) {
+  const tmpl = templateForKind(kind);
+  const lengthWeeks = state.currentBlock.lengthWeeks;
+  return {
+    kind, instance,
+    completedDate: null,
+    exercises: tmpl.map(t => {
+      const isDeload = (weekIdx === lengthWeeks - 1);
+      const targetSets = isDeload
+        ? (t.deloadSets != null ? t.deloadSets : Math.max(1, Math.floor((t.baseSets || 0) / 2)))
+        : (t.baseSets || 0);
+      const weekRIR = RIR_LADDER[Math.min(weekIdx, RIR_LADDER.length - 1)];
+      const prevEx = findLastCompletedExercise(state, t.exId);
+      const rx = nextRx(t.exId, prevEx, weekRIR, state.user.phase);
+      const sets = [];
+      for (let i = 0; i < targetSets; i++) {
+        sets.push({
+          plannedReps: rx.reps,
+          plannedLoad: rx.load,
+          plannedRIR: rx.rir,
+          weight: null, reps: null, rir: null
+        });
+      }
+      return {
+        exId: t.exId,
+        targetSets,
+        required: t.required,
+        sets,
+        rxNote: rx.note,
+        pullupRepDrop: t.pullupRepDrop || 0
+      };
+    })
+  };
+}
+
+function ensureWeekBuilt(state, weekIdx) {
+  if (!state.currentBlock.prescriptions[weekIdx]) state.currentBlock.prescriptions[weekIdx] = {};
+  const wk = state.currentBlock.prescriptions[weekIdx];
+  for (const sk of allSlotKeysForWeek(state.currentBlock.weeklyTargets)) {
+    if (wk[sk]) continue;
+    const { kind, instance } = parseSlotKey(sk);
+    wk[sk] = buildSlotSession(state, weekIdx, kind, instance);
+  }
+}
+
+// ============================================================================
+// VOLUME + CATCHUP
+// ============================================================================
+
+function weeklyVolume(state, weekIdx, mode = "logged") {
+  const vol = {};
+  MUSCLES.forEach(m => vol[m] = 0);
+  const wk = state.currentBlock.prescriptions[weekIdx] || {};
+  for (const sess of Object.values(wk)) {
+    for (const ex of sess.exercises || []) {
+      const muscle = EXERCISES[ex.exId]?.primary;
+      if (!muscle) continue;
+      if (mode === "logged") {
+        const completed = (ex.sets || []).filter(s => s.reps != null && s.reps >= 4).length;
+        vol[muscle] += completed;
+      } else {
+        vol[muscle] += ex.targetSets || 0;
+      }
+    }
+  }
+  return vol;
+}
+
+// Find floating exercises across the week that aren't fully logged.
+// Used both for "catch-up session" and to surface under-served muscles.
+function pendingFloating(state, weekIdx) {
+  const wk = state.currentBlock.prescriptions[weekIdx] || {};
+  const out = [];
+  const seen = new Set();
+  for (const [sk, sess] of Object.entries(wk)) {
+    if (!sess.completedDate) continue;  // floating recovery only counts from completed sessions
+    for (const ex of sess.exercises || []) {
+      if (ex.required) continue;
+      const completed = (ex.sets || []).filter(s => s.reps != null && s.reps >= 4).length;
+      if (completed >= (ex.targetSets || 0)) continue;
+      const k = `${sk}|${ex.exId}`;
+      if (seen.has(k)) continue;
+      seen.add(k);
+      out.push({ slotKey: sk, exId: ex.exId, missing: (ex.targetSets || 0) - completed });
+    }
+  }
+  return out;
+}
+
+function checkDeload(state) {
+  const b = state.currentBlock;
+  if (!b) return null;
+  if (b.userCookedOverride) return "user override";
+  // Performance regression across recent sessions
+  const muscleHits = {};
+  for (const [fbKey, fb] of Object.entries(b.feedback || {})) {
+    if (!fb.post) continue;
+    for (const [m, post] of Object.entries(fb.post)) {
+      if (!muscleHits[m]) muscleHits[m] = [];
+      muscleHits[m].push({
+        date: fb.date || "",
+        perf: (fb.pre && fb.pre[m] && fb.pre[m].perf) ?? 1,
+        soreness: (fb.pre && fb.pre[m] && fb.pre[m].soreness) ?? 1
+      });
+    }
+  }
+  for (const m of Object.keys(muscleHits)) {
+    muscleHits[m].sort((a, b) => a.date.localeCompare(b.date));
+    const last = muscleHits[m].slice(-2);
+    if (last.length === 2 && last.every(x => x.perf === 2 && x.soreness >= 2))
+      return `performance regression — ${MUSCLE_LABEL[m]} crashed two sessions in a row`;
+  }
+  return null;
+}
+
+// ============================================================================
+// AUTOREGULATION
+// ============================================================================
+
+function applyAutoregulation(state, completedWeekIdx, completedSlotKey) {
+  const block = state.currentBlock;
+  const fbKey = `${completedWeekIdx}|${completedSlotKey}`;
+  const fbDay = block.feedback[fbKey];
+  if (!fbDay || !fbDay.post) return;
+
+  // For each muscle with post-session feedback, determine where to apply delta:
+  // — the next instance of the same kind in the same week if any pending,
+  // — else first instance of same kind in next week.
+  const completedKind = parseSlotKey(completedSlotKey).kind;
+  const completedInstance = parseSlotKey(completedSlotKey).instance;
+
+  function findTargetSession(muscle) {
+    // Find a kind whose user template trains this muscle
+    let muscleKind = null;
+    for (const k of userKinds()) {
+      if (templateForKind(k).some(t => EXERCISES[t.exId]?.primary === muscle)) {
+        muscleKind = k; break;
+      }
+    }
+    if (!muscleKind) return null;
+    // Look in same week for next instance of muscleKind
+    const wk = block.prescriptions[completedWeekIdx] || {};
+    for (let i = 1; i <= (block.weeklyTargets[muscleKind] || 0); i++) {
+      const sk = slotKey(muscleKind, i);
+      const sess = wk[sk];
+      if (!sess) continue;
+      if (sess.completedDate) continue;
+      // For same kind, must be after current instance
+      if (muscleKind === completedKind && i <= completedInstance) continue;
+      return { weekIdx: completedWeekIdx, slotKey: sk, session: sess };
+    }
+    // Else next week
+    if (completedWeekIdx + 1 < block.lengthWeeks) {
+      ensureWeekBuilt(state, completedWeekIdx + 1);
+      const nextWk = block.prescriptions[completedWeekIdx + 1];
+      for (let i = 1; i <= (block.weeklyTargets[muscleKind] || 0); i++) {
+        const sk = slotKey(muscleKind, i);
+        const sess = nextWk[sk];
+        if (sess) return { weekIdx: completedWeekIdx + 1, slotKey: sk, session: sess };
+      }
+    }
+    return null;
+  }
+
+  for (const [muscle, post] of Object.entries(fbDay.post)) {
+    const pre = (fbDay.pre || {})[muscle] || {};
+    const fb = { ...pre, ...post };
+    const action = autoregDelta(fb, state.user.phase);
+    if (action.delta === 0) continue;
+
+    const target = findTargetSession(muscle);
+    if (!target) continue;
+    const candidates = (target.session.exercises || [])
+      .filter(e => EXERCISES[e.exId]?.primary === muscle)
+      .sort((a, b) => (a.required === b.required) ? 0 : (a.required ? 1 : -1));
+    let remaining = action.delta;
+    if (remaining < 0) {
+      for (const ex of candidates) {
+        if (remaining === 0) break;
+        const cut = Math.min(Math.abs(remaining), Math.max(0, (ex.targetSets || 0) - 1));
+        ex.targetSets -= cut;
+        ex.sets = (ex.sets || []).slice(0, ex.targetSets);
+        remaining += cut;
+      }
+    } else {
+      for (const ex of candidates) {
+        if (remaining === 0) break;
+        const lm = state.landmarks[muscle];
+        // Estimate weekly target post-bump
+        const wkVol = Object.values(target.session.exercises)
+          .filter(e => EXERCISES[e.exId]?.primary === muscle)
+          .reduce((a, e) => a + (e.targetSets || 0), 0);
+        if (wkVol >= lm.MRV) break;
+        ex.targetSets += 1;
+        const proto = (ex.sets || [])[0] || {
+          plannedReps: EXERCISES[ex.exId].rep[0], plannedLoad: null,
+          plannedRIR: RIR_LADDER[target.weekIdx], weight: null, reps: null, rir: null
+        };
+        ex.sets = ex.sets || [];
+        ex.sets.push({ ...proto, weight: null, reps: null, rir: null });
+        remaining -= 1;
+      }
+    }
+    block._lastAutoregNotes = block._lastAutoregNotes || [];
+    block._lastAutoregNotes.push({
+      muscle, reason: action.reason, delta: action.delta,
+      appliedTo: `Week ${target.weekIdx + 1} ${target.slotKey}`
+    });
+  }
+
+  // Refresh load/rep prescriptions for the target sessions based on this completion
+  // (only for slots that haven't been started yet)
+  for (let w = completedWeekIdx; w < block.lengthWeeks; w++) {
+    const wk = block.prescriptions[w];
+    if (!wk) continue;
+    for (const [sk, sess] of Object.entries(wk)) {
+      if (sess.completedDate) continue;
+      if ((sess.exercises || []).some(e => (e.sets || []).some(s => s.reps != null || s.weight != null))) continue;
+      const k = parseSlotKey(sk).kind;
+      const inst = parseSlotKey(sk).instance;
+      for (const ex of sess.exercises || []) {
+        const prev = findLastCompletedOfKind(state, k, w, inst);
+        const prevEx = prev ? prev.session.exercises.find(e => e.exId === ex.exId) : null;
+        const rx = nextRx(ex.exId, prevEx, RIR_LADDER[w], state.user.phase);
+        for (const s of ex.sets) {
+          if (s.weight == null) s.plannedLoad = rx.load;
+          s.plannedReps = rx.reps;
+          s.plannedRIR = rx.rir;
+        }
+        ex.rxNote = rx.note;
+      }
+    }
+  }
+}
+
+// ============================================================================
+// STATE
+// ============================================================================
+
+// === Multi-user storage ===
+const USERS_KEY = "rp-clone-users";
+const ACTIVE_USER_KEY = "rp-clone-active-user";
+const USER_STATE_KEY = id => `rp-clone-user-${id}`;
+const LEGACY_KEY = "rp-clone-v2";  // older single-user storage; migrated on first boot
+
+function loadUsersList() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY)) || []; }
+  catch (e) { return []; }
+}
+function saveUsersList(users) { localStorage.setItem(USERS_KEY, JSON.stringify(users)); }
+function getActiveUserId() { return localStorage.getItem(ACTIVE_USER_KEY); }
+function setActiveUserId(id) { localStorage.setItem(ACTIVE_USER_KEY, id); }
+function loadUserState(id) {
+  try { return JSON.parse(localStorage.getItem(USER_STATE_KEY(id))) || null; }
+  catch (e) { return null; }
+}
+function saveUserState(id, st) { localStorage.setItem(USER_STATE_KEY(id), JSON.stringify(st)); }
+
+function newUserId() { return "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+// Convert hardcoded BLOCK_1_TEMPLATE to the user-editable template format (baseSets + deloadSets)
+function defaultTemplateFromBlock1() {
+  const out = {};
+  for (const [kind, exs] of Object.entries(BLOCK_1_TEMPLATE)) {
+    out[kind] = exs.map(t => ({
+      exId: t.exId,
+      baseSets: t.setsByWk[0],
+      deloadSets: t.setsByWk[t.setsByWk.length - 1],
+      required: t.required,
+      pullupRepDrop: t.pullupRepDrop || 0
+    }));
+  }
+  return out;
+}
+
+function emptyUserState(name) {
+  const today = new Date();
+  const monday = startOfWeek(today);
+  return {
+    version: 3,
+    user: {
+      name: name || "Lifter",
+      unit: "kg",
+      specializationCap: 3,
+      phase: "maintenance",
+      kinds: [],            // populated by onboarding
+      template: {}          // populated by onboarding
+    },
+    landmarks: structuredClone(DEFAULT_LANDMARKS),
+    currentBlock: null,     // built after onboarding
+    customExercises: {},
+    history: { blocks: [], routineSnapshots: [] },
+    onboarding: { step: 0, draftKinds: [], draftTargets: {}, draftTemplate: {}, currentKindIdx: 0, search: "" }
+  };
+}
+
+function bhaskarSeededUserState(name) {
+  // The known-good example block (current diagnostic-driven template)
+  const today = new Date();
+  const monday = startOfWeek(today);
+  return {
+    version: 3,
+    user: {
+      name: name || "Bhaskar",
+      unit: "kg",
+      specializationCap: 3,
+      phase: "maintenance",
+      kinds: ["Pull", "Push", "Legs"],
+      template: defaultTemplateFromBlock1()
+    },
+    landmarks: structuredClone(DEFAULT_LANDMARKS),
+    currentBlock: {
+      id: "block-1",
+      startDate: isoDate(monday),
+      lengthWeeks: 5,
+      focus: "recovery_recalibration",
+      weeklyTargets: structuredClone(DEFAULT_WEEKLY_TARGETS),
+      prescriptions: {},
+      feedback: {},
+      activeSlot: null,
+      userCookedOverride: false
+    },
+    customExercises: {},
+    history: { blocks: [], routineSnapshots: [] },
+    onboarding: null
+  };
+}
+
+function migrateLegacyIfNeeded() {
+  const users = loadUsersList();
+  if (users.length > 0) return;
+  const legacy = localStorage.getItem(LEGACY_KEY);
+  if (!legacy) return;
+  let st;
+  try { st = JSON.parse(legacy); } catch (e) { return; }
+  // Promote legacy to a "Bhaskar" user
+  const id = newUserId();
+  st.version = 3;
+  if (!st.user) st.user = {};
+  st.user.name = st.user.name || "Bhaskar";
+  st.user.kinds = st.user.kinds || ["Pull", "Push", "Legs"];
+  st.user.template = st.user.template || defaultTemplateFromBlock1();
+  st.onboarding = null;
+  saveUserState(id, st);
+  saveUsersList([{ id, name: st.user.name, createdAt: new Date().toISOString() }]);
+  setActiveUserId(id);
+}
+
+function saveState() {
+  const id = getActiveUserId();
+  if (!id) return;
+  saveUserState(id, state);
+}
+
+// Boot: ensure at least one user exists; load active user's state.
+migrateLegacyIfNeeded();
+let users = loadUsersList();
+let activeUserId = getActiveUserId();
+if (users.length === 0) {
+  // No users at all — bootstrap a first user in onboarding mode
+  const id = newUserId();
+  const st = emptyUserState("");
+  saveUserState(id, st);
+  users = [{ id, name: "(new user)", createdAt: new Date().toISOString() }];
+  saveUsersList(users);
+  setActiveUserId(id);
+  activeUserId = id;
+} else if (!activeUserId || !users.find(u => u.id === activeUserId)) {
+  activeUserId = users[0].id;
+  setActiveUserId(activeUserId);
+}
+
+let state = loadUserState(activeUserId) || emptyUserState("");
+if (state.customExercises) Object.assign(EXERCISES, state.customExercises);
+
+// Helpers for kinds + template
+function userKinds() { return (state.user && state.user.kinds && state.user.kinds.length > 0) ? state.user.kinds : ["Pull", "Push", "Legs"]; }
+function userTemplate() { return (state.user && state.user.template && Object.keys(state.user.template).length > 0) ? state.user.template : defaultTemplateFromBlock1(); }
+function templateForKind(kind) { return userTemplate()[kind] || []; }
+
+function currentWeekIdx(state) {
+  const start = new Date(state.currentBlock.startDate);
+  const today = new Date();
+  const diffDays = Math.floor((today - start) / 86400000);
+  return Math.max(0, Math.min(state.currentBlock.lengthWeeks - 1, Math.floor(diffDays / 7)));
+}
+
+ensureWeekBuilt(state, currentWeekIdx(state));
+saveState();
+
+// ============================================================================
+// PROJECTION + ANALYTICS HELPERS
+// ============================================================================
+
+function phaseLabel(p) {
+  return { cut: "Cut (deficit)", maintenance: "Maintenance", surplus: "Surplus (bulk)" }[p] || p;
+}
+function phaseDescription(p) {
+  return {
+    cut: "Engine prioritizes maintaining strength. Volume bumps damped; recovery flags amplified. Load adds only when comfortably earned (RIR cushion required).",
+    maintenance: "Standard progression engine. Both load and volume push as conditions allow.",
+    surplus: "Engine accepts load bumps at threshold; recovery flags handled more leniently when otherwise green."
+  }[p] || "";
+}
+
+// Pull the best working set per week per exercise from completed sessions.
+function projectExercise(state, exId) {
+  const block = state.currentBlock;
+  const byWeek = {};
+  for (let w = 0; w < block.lengthWeeks; w++) {
+    const wk = block.prescriptions[w] || {};
+    for (const sess of Object.values(wk)) {
+      if (!sess.completedDate) continue;
+      for (const ex of sess.exercises || []) {
+        if (ex.exId !== exId) continue;
+        const completed = (ex.sets || []).filter(s => s.weight != null && s.reps != null);
+        if (completed.length === 0) continue;
+        const top = completed.reduce((best, s) => {
+          const rir = s.rir == null ? 0 : s.rir;
+          const e = s.weight * (1 + (s.reps + rir) / 30);
+          return (!best || e > best.e) ? { weight: s.weight, reps: s.reps, rir, e } : best;
+        }, null);
+        if (!byWeek[w] || top.e > byWeek[w].e1rm) {
+          byWeek[w] = { week: w, load: top.weight, reps: top.reps, rir: top.rir, e1rm: top.e };
+        }
+      }
+    }
+  }
+  const actual = Object.values(byWeek).sort((a, b) => a.week - b.week);
+  // Simulate forward from latest actual using nextRx as if user hits the plan at target RIR
+  const projected = [];
+  if (actual.length > 0) {
+    let last = actual[actual.length - 1];
+    let curW = last.week + 1;
+    while (curW < block.lengthWeeks - 1) {  // skip deload week from projection
+      const fakePrev = { sets: [{ weight: last.load, reps: last.reps, rir: last.rir }] };
+      const rx = nextRx(exId, fakePrev, RIR_LADDER[curW], state.user.phase);
+      const nl = rx.load == null ? last.load : rx.load;
+      const e = nl * (1 + (rx.reps + rx.rir) / 30);
+      projected.push({ week: curW, load: nl, reps: rx.reps, rir: rx.rir, e1rm: e, projected: true });
+      last = { load: nl, reps: rx.reps, rir: rx.rir };
+      curW++;
+    }
+  }
+  return { actual, projected };
+}
+
+function sparklineSVG(actual, projected) {
+  const all = [...actual, ...projected];
+  if (all.length === 0) return "";
+  const w = 320, h = 90, pad = 24;
+  const maxX = 4;
+  const ys = all.map(p => p.e1rm);
+  let minY = Math.min(...ys), maxY = Math.max(...ys);
+  if (maxY === minY) { maxY = minY + 1; }
+  const rangeY = maxY - minY;
+  const xScale = i => pad + (i / maxX) * (w - 2 * pad);
+  const yScale = v => h - pad - ((v - minY) / rangeY) * (h - 2 * pad);
+  let svg = `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;">`;
+  // Week gridlines + labels
+  for (let i = 0; i < 5; i++) {
+    const x = xScale(i);
+    svg += `<line x1="${x}" y1="${pad - 4}" x2="${x}" y2="${h - pad + 2}" stroke="#2a3140" stroke-width="0.7"/>`;
+    svg += `<text x="${x}" y="${h - 6}" fill="#8b949e" font-size="10" text-anchor="middle">W${i + 1}</text>`;
+  }
+  // Y bounds
+  svg += `<text x="2" y="${pad + 4}" fill="#8b949e" font-size="9">${Math.round(maxY)}</text>`;
+  svg += `<text x="2" y="${h - pad}" fill="#8b949e" font-size="9">${Math.round(minY)}</text>`;
+  // Solid line through actual
+  if (actual.length > 1) {
+    let d = `M ${xScale(actual[0].week)} ${yScale(actual[0].e1rm)}`;
+    for (let i = 1; i < actual.length; i++) d += ` L ${xScale(actual[i].week)} ${yScale(actual[i].e1rm)}`;
+    svg += `<path d="${d}" fill="none" stroke="#58a6ff" stroke-width="2"/>`;
+  }
+  // Dashed line through projected (anchored to last actual)
+  if (projected.length > 0 && actual.length > 0) {
+    const a = actual[actual.length - 1];
+    let d = `M ${xScale(a.week)} ${yScale(a.e1rm)}`;
+    for (const p of projected) d += ` L ${xScale(p.week)} ${yScale(p.e1rm)}`;
+    svg += `<path d="${d}" fill="none" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="5 3"/>`;
+  }
+  // Points
+  for (const p of actual) {
+    svg += `<circle cx="${xScale(p.week)}" cy="${yScale(p.e1rm)}" r="3.5" fill="#58a6ff"/>`;
+  }
+  for (const p of projected) {
+    svg += `<circle cx="${xScale(p.week)}" cy="${yScale(p.e1rm)}" r="3" fill="#161b22" stroke="#8b949e" stroke-width="1.5"/>`;
+  }
+  svg += `</svg>`;
+  return svg;
+}
+
+function viewAnalytics() {
+  const block = state.currentBlock;
+  const phase = state.user.phase || "maintenance";
+  let html = `<h1>Analytics</h1>`;
+  html += `<div class="card"><h2>Current phase</h2>
+    <div class="row tight" style="margin-bottom:6px;">
+      <span class="tag in">${phaseLabel(phase)}</span>
+    </div>
+    <div class="muted">${phaseDescription(phase)}</div>
+    <div class="muted" style="margin-top:6px;">Switch phase in Settings → Nutritional phase.</div>
+  </div>`;
+
+  // Gather exercises with at least one completed logged set
+  const exIds = new Set();
+  for (let w = 0; w < block.lengthWeeks; w++) {
+    const wk = block.prescriptions[w] || {};
+    for (const sess of Object.values(wk)) {
+      if (!sess.completedDate) continue;
+      for (const ex of sess.exercises || []) {
+        if ((ex.sets || []).some(s => s.weight != null && s.reps != null)) exIds.add(ex.exId);
+      }
+    }
+  }
+  if (exIds.size === 0) {
+    html += `<div class="card"><div class="muted">No completed sessions yet. Log a session and analytics will populate here with per-exercise projections.</div></div>`;
+    return html;
+  }
+  html += `<div class="card"><h2>Per-exercise progression</h2>
+    <div class="muted" style="margin-bottom:8px;">Solid line = actual best working set per week (e1RM via Epley + RIR cushion). Dashed = projected under your current plan and phase, simulated through the engine.</div>
+  </div>`;
+  for (const exId of exIds) {
+    const meta = EXERCISES[exId];
+    const proj = projectExercise(state, exId);
+    if (proj.actual.length === 0) continue;
+    const start = proj.actual[0];
+    const current = proj.actual[proj.actual.length - 1];
+    const end = proj.projected.length > 0 ? proj.projected[proj.projected.length - 1] : current;
+    const delta = end.e1rm - start.e1rm;
+    const deltaPct = (delta / start.e1rm) * 100;
+    html += `<div class="card"><h3>${meta.name}</h3>`;
+    html += sparklineSVG(proj.actual, proj.projected);
+    html += `<table style="margin-top:8px;"><thead><tr><th>Week</th><th>Load</th><th>Reps</th><th>RIR</th><th>e1RM</th></tr></thead><tbody>`;
+    proj.actual.forEach(p => {
+      html += `<tr><td>W${p.week + 1}</td><td>${p.load} ${state.user.unit}</td><td>${p.reps}</td><td>${p.rir}</td><td>${Math.round(p.e1rm)}</td></tr>`;
+    });
+    proj.projected.forEach(p => {
+      html += `<tr style="opacity:0.7;"><td>W${p.week + 1} <span class="tag float">proj</span></td><td>${p.load} ${state.user.unit}</td><td>${p.reps}</td><td>${p.rir}</td><td>${Math.round(p.e1rm)}</td></tr>`;
+    });
+    html += `</tbody></table>`;
+    const trendTag = delta >= 0 ? "in" : "under";
+    html += `<div class="row spaced" style="margin-top:8px;">
+      <span class="muted">Start: <b>${Math.round(start.e1rm)}</b> · projected end: <b>${Math.round(end.e1rm)}</b></span>
+      <span class="tag ${trendTag}">${delta >= 0 ? "+" : ""}${delta.toFixed(1)} kg (${deltaPct >= 0 ? "+" : ""}${deltaPct.toFixed(1)}%)</span>
+    </div>`;
+    html += `</div>`;
+  }
+  return html;
+}
+
+// ============================================================================
+// VIEW: TODAY
+// ============================================================================
+
+let activeView = "today";
+
+function render() {
+  // Always update the user-menu label
+  const nameSpan = document.getElementById("user-menu-name");
+  if (nameSpan) nameSpan.textContent = (state.user && state.user.name) || "(unnamed)";
+  // Render user menu overlay if open
+  const pop = document.getElementById("user-menu-pop");
+  if (pop) {
+    if (state._uiOverlay === "user-menu") {
+      pop.style.display = "block";
+      pop.innerHTML = renderUserMenu();
+    } else {
+      pop.style.display = "none";
+      pop.innerHTML = "";
+    }
+  }
+  const main = document.getElementById("main");
+
+  // If onboarding is active, render the wizard and short-circuit
+  if (state.onboarding) {
+    main.innerHTML = viewOnboarding();
+    bindHandlers();
+    return;
+  }
+
+  // If no current block (shouldn't happen post-onboarding, but defensive), force onboarding
+  if (!state.currentBlock) {
+    state.onboarding = { step: 0, draftKinds: ["Pull","Push","Legs"], draftTargets: {Pull:2,Push:2,Legs:1}, draftTemplate: {}, currentKindIdx: 0, search: "" };
+    saveState();
+    main.innerHTML = viewOnboarding();
+    bindHandlers();
+    return;
+  }
+
+  const wk = currentWeekIdx(state);
+  ensureWeekBuilt(state, wk);
+  saveState();
+  if (activeView === "today") main.innerHTML = viewToday();
+  else if (activeView === "block") main.innerHTML = viewBlock();
+  else if (activeView === "history") main.innerHTML = viewHistory();
+  else if (activeView === "analytics") main.innerHTML = viewAnalytics();
+  else if (activeView === "settings") main.innerHTML = viewSettings();
+  bindHandlers();
+}
+
+function renderUserMenu() {
+  const users = loadUsersList();
+  const activeId = getActiveUserId();
+  let html = `<div style="background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:12px; margin:12px; max-width:720px; margin-left:auto; margin-right:auto;">
+    <div class="row spaced"><h2 style="margin:0;">Switch user</h2><button data-action="close-user-menu">×</button></div>
+    <div style="margin-top:8px;">`;
+  users.forEach(u => {
+    const isActive = u.id === activeId;
+    html += `<div class="row spaced" style="padding:6px 0; border-bottom:1px dashed var(--border);">
+      <div>${u.name} ${isActive ? '<span class="tag in">active</span>' : ''}</div>
+      <div class="row tight">
+        ${isActive ? '' : `<button class="small" data-action="switch-user" data-uid="${u.id}">Switch</button>`}
+        <button class="small" data-action="rename-user" data-uid="${u.id}">Rename</button>
+        ${users.length > 1 ? `<button class="small danger" data-action="delete-user" data-uid="${u.id}">Delete</button>` : ''}
+      </div>
+    </div>`;
+  });
+  html += `<div style="margin-top:10px;"><button class="primary" data-action="add-user">+ Add new user</button></div>
+    </div></div>`;
+  return html;
+}
+
+// ============================================================================
+// ONBOARDING WIZARD
+// ============================================================================
+
+function viewOnboarding() {
+  const ob = state.onboarding;
+  switch (ob.step) {
+    case 0: return obWelcome();
+    case 1: return obProfile();
+    case 2: return obSchedule();
+    case 3: return obBuild();
+    case 4: return obReview();
+    default: return obWelcome();
+  }
+}
+
+function obStepHeader(stepIdx, total = 5) {
+  const labels = ["Welcome","Profile","Schedule","Build","Review"];
+  let html = `<div class="card" style="display:flex; gap:6px; flex-wrap:wrap;">`;
+  for (let i = 0; i < total; i++) {
+    const active = i === stepIdx;
+    const done = i < stepIdx;
+    html += `<span class="tag ${done ? "done" : active ? "req" : ""}">${i+1}. ${labels[i]}</span>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function obWelcome() {
+  return `<h1>Welcome to RP Clone</h1>
+    ${obStepHeader(0)}
+    <div class="card">
+      <p>A self-hosted RP-style workout engine. Pick exercises, log sets, get autoregulated, see projections — no app subscription needed.</p>
+      <p class="muted">Choose how to start:</p>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+        <button class="big primary" data-action="ob-build-fresh">Build my block from scratch</button>
+        <button class="big" data-action="ob-use-example">Use the example block (Bhaskar's diagnostic-driven template)</button>
+      </div>
+    </div>`;
+}
+
+function obProfile() {
+  const ob = state.onboarding;
+  return `<h1>Your profile</h1>
+    ${obStepHeader(1)}
+    <div class="card">
+      <div class="row" style="margin-bottom:8px;">
+        <span class="muted" style="width:120px;">Name</span>
+        <input type="text" id="ob-name" placeholder="Your name" value="${state.user.name || ""}" style="flex:1;">
+      </div>
+      <div class="row" style="margin-bottom:8px;">
+        <span class="muted" style="width:120px;">Units</span>
+        <select id="ob-unit">
+          <option value="kg" ${state.user.unit === "kg" ? "selected":""}>kg</option>
+          <option value="lb" ${state.user.unit === "lb" ? "selected":""}>lb</option>
+        </select>
+      </div>
+      <div class="row" style="margin-bottom:8px;">
+        <span class="muted" style="width:120px;">Phase</span>
+        <select id="ob-phase">
+          <option value="cut" ${state.user.phase === "cut" ? "selected":""}>Cut (deficit)</option>
+          <option value="maintenance" ${state.user.phase === "maintenance" ? "selected":""}>Maintenance</option>
+          <option value="surplus" ${state.user.phase === "surplus" ? "selected":""}>Surplus (bulk)</option>
+        </select>
+      </div>
+      <div class="muted" style="margin-top:6px;">${phaseDescription(state.user.phase || "maintenance")}</div>
+    </div>
+    <div class="row tight">
+      <button data-action="ob-prev">← Back</button>
+      <button class="primary" data-action="ob-next-from-profile">Next: schedule →</button>
+    </div>`;
+}
+
+function obSchedule() {
+  const ob = state.onboarding;
+  let html = `<h1>Weekly schedule shape</h1>
+    ${obStepHeader(2)}
+    <div class="card">
+      <div class="muted" style="margin-bottom:8px;">Define your session kinds (Pull / Push / Legs / Upper / Lower / Arms etc.) and how many of each you aim for in a typical week. You can rename or add kinds.</div>`;
+  ob.draftKinds.forEach((k, i) => {
+    html += `<div class="row" style="margin-bottom:6px;">
+      <input type="text" value="${k}" data-ob-kind-name="${i}" style="flex:1;">
+      <input type="number" min="0" max="7" value="${ob.draftTargets[k] || 0}" data-ob-kind-target="${i}" style="width:60px;">
+      <span class="muted">/wk</span>
+      ${ob.draftKinds.length > 1 ? `<button class="small danger" data-action="ob-remove-kind" data-i="${i}">×</button>` : ""}
+    </div>`;
+  });
+  html += `<div style="margin-top:8px;"><button data-action="ob-add-kind">+ Add a kind</button></div>
+    </div>
+    <div class="row tight">
+      <button data-action="ob-prev">← Back</button>
+      <button class="primary" data-action="ob-next-from-schedule">Next: pick exercises →</button>
+    </div>`;
+  return html;
+}
+
+function obBuild() {
+  const ob = state.onboarding;
+  const kind = ob.draftKinds[ob.currentKindIdx];
+  const picked = ob.draftTemplate[kind] || [];
+  const pickedIds = new Set(picked.map(e => e.exId));
+  const search = (ob.search || "").toLowerCase();
+
+  let html = `<h1>Build ${kind} (${ob.currentKindIdx + 1}/${ob.draftKinds.length})</h1>
+    ${obStepHeader(3)}
+    <div class="card">
+      <h2>${kind} exercises (${picked.length})</h2>`;
+  if (picked.length === 0) {
+    html += `<div class="muted">Pick exercises from the library below.</div>`;
+  } else {
+    picked.forEach((p, i) => {
+      const meta = EXERCISES[p.exId];
+      html += `<div class="row spaced" style="padding:6px 0; border-bottom:1px dashed var(--border);">
+        <div>${meta.name} <span class="muted">(${MUSCLE_LABEL[meta.primary]})</span></div>
+        <div class="row tight">
+          <input type="number" min="1" max="10" value="${p.baseSets}" data-ob-baseset="${i}" style="width:54px;">
+          <span class="muted">sets</span>
+          <label class="muted row tight"><input type="checkbox" ${p.required ? "checked":""} data-ob-req="${i}"> required</label>
+          <button class="small danger" data-action="ob-remove-ex" data-i="${i}">×</button>
+        </div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  html += `<div class="card">
+    <h2>Exercise library</h2>
+    <input type="text" placeholder="Search..." value="${ob.search || ""}" data-ob-search style="width:100%; margin-bottom:8px;">`;
+  for (const m of MUSCLES) {
+    const exs = Object.entries(EXERCISES)
+      .filter(([id, ex]) => ex.primary === m)
+      .filter(([id, ex]) => !search || ex.name.toLowerCase().includes(search) || MUSCLE_LABEL[m].toLowerCase().includes(search));
+    if (exs.length === 0) continue;
+    html += `<div style="margin-bottom:8px;"><div class="muted" style="font-weight:600;margin-bottom:4px;">${MUSCLE_LABEL[m]}</div>`;
+    exs.forEach(([id, ex]) => {
+      const already = pickedIds.has(id);
+      const catLabel = ex.cat === "cns_compound" ? "compound (CNS)" : ex.cat === "std_compound" ? "compound" : "isolation";
+      html += `<div class="row spaced" style="padding:3px 0;">
+        <div>${ex.name} <span class="muted">· ${ex.rep[0]}–${ex.rep[1]} reps · ${catLabel}</span></div>
+        ${already ? `<span class="tag in">✓</span>` : `<button class="small" data-action="ob-add-ex" data-exid="${id}">+ Add</button>`}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  html += `<div class="row tight">
+    <button data-action="ob-build-prev">← ${ob.currentKindIdx === 0 ? "Back to schedule" : "Previous kind"}</button>
+    <button class="primary" data-action="ob-build-next">${ob.currentKindIdx === ob.draftKinds.length - 1 ? "Next: review →" : "Next kind →"}</button>
+  </div>`;
+  return html;
+}
+
+function obReview() {
+  const ob = state.onboarding;
+  // Estimate weekly volume per muscle
+  const vol = {};
+  MUSCLES.forEach(m => vol[m] = 0);
+  for (const kind of ob.draftKinds) {
+    const sessions = ob.draftTargets[kind] || 0;
+    const tmpl = ob.draftTemplate[kind] || [];
+    for (const t of tmpl) {
+      const m = EXERCISES[t.exId]?.primary;
+      if (!m) continue;
+      vol[m] += (t.baseSets || 0) * sessions;
+    }
+  }
+  let html = `<h1>Review your block</h1>${obStepHeader(4)}`;
+  html += `<div class="card"><h2>Schedule</h2>`;
+  ob.draftKinds.forEach(k => {
+    const exs = ob.draftTemplate[k] || [];
+    const tot = exs.reduce((a, e) => a + (e.baseSets || 0), 0);
+    html += `<div style="padding:4px 0; border-bottom:1px dashed var(--border);">
+      <b>${k}</b> <span class="muted">× ${ob.draftTargets[k] || 0}/wk · ${exs.length} exercises, ${tot} sets/session</span></div>`;
+  });
+  html += `</div>`;
+  html += `<div class="card"><h2>Projected weekly volume per muscle</h2>
+    <div class="legend"><span><i style="background:var(--good);"></i>in MAV</span>
+      <span><i style="background:var(--bad);"></i>under MEV</span>
+      <span><i style="background:var(--warn);"></i>near/over MRV</span></div>`;
+  MUSCLES.forEach(m => {
+    if (vol[m] === 0) return;
+    const lm = state.landmarks[m];
+    const s = volStatus(vol[m], lm);
+    const cls = statusTagClass(s);
+    html += `<div class="muscle-row">
+      <div>${MUSCLE_LABEL[m]}</div>
+      <div class="muted">MEV ${lm.MEV} · MAV ${lm.MAV.join("–")} · MRV ${lm.MRV}</div>
+      <div class="row tight"><span class="muted">${vol[m]}</span><span class="tag ${cls}">${statusLabel(s)}</span></div>
+    </div>`;
+  });
+  html += `</div>`;
+  html += `<div class="row tight">
+    <button data-action="ob-prev">← Back</button>
+    <button class="primary" data-action="ob-start-block">Start block →</button>
+  </div>`;
+  return html;
+}
+
+function viewToday() {
+  const wk = currentWeekIdx(state);
+  const block = state.currentBlock;
+  const weekRIR = RIR_LADDER[wk];
+  const isDeloadWeek = wk === block.lengthWeeks - 1;
+  const deload = checkDeload(state);
+
+  let header = `<h1>Today</h1>`;
+  header += `<div class="muted">Block 1 · Week ${wk + 1} of ${block.lengthWeeks} · RIR ${weekRIR}${isDeloadWeek ? " (DELOAD)" : ""} · phase: ${phaseLabel(state.user.phase || "maintenance")} · ${isoDate(new Date())}</div>`;
+
+  if (deload && !isDeloadWeek) {
+    header += `<div class="warn-banner"><b>Deload signal:</b> ${deload}. Trigger early deload from Settings if you agree.</div>`;
+  }
+
+  // If a custom builder is open, render that
+  if (block.customBuilder) {
+    return header + viewCustomBuilder();
+  }
+  // If a swap is in progress, render swap UI atop the active session
+  if (block.swapTarget) {
+    return header + viewSwapPanel(block.swapTarget) + viewActiveSession(block.activeSlot);
+  }
+  // If a session is active, render it
+  if (block.activeSlot) {
+    return header + viewActiveSession(block.activeSlot);
+  }
+
+  // Otherwise show the picker
+  let body = header;
+  body += viewSessionPicker(wk);
+  body += viewWeekSnapshot(wk);
+  body += viewWeeklyVolume(wk);
+  return body;
+}
+
+function viewSessionPicker(wk) {
+  const block = state.currentBlock;
+  let html = `<div class="card"><h2>Pick today's session</h2>`;
+  const anyPending = SESSION_KINDS.some(k => pendingInstancesOfKind(state, wk, k).length > 0);
+  if (!anyPending) {
+    html += `<div class="muted">All planned sessions for this week are done. Optional: run a catch-up if floating exercises are still incomplete.</div>`;
+    const cu = pendingFloating(state, wk);
+    if (cu.length > 0) {
+      html += `<div style="margin-top:10px;"><button class="primary" data-action="open-catchup" data-week="${wk}">Start catch-up (${cu.length} unfinished floating)</button></div>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  for (const kind of userKinds()) {
+    const pending = pendingInstancesOfKind(state, wk, kind);
+    const target = block.weeklyTargets[kind] || 0;
+    const doneCount = target - pending.length;
+    const last = findLastCompletedOfKind(state, kind);
+    const lastStr = last ? `last hit ${daysSinceISO(last.date)}d ago (${last.date})` : "no prior session yet";
+    let spacingWarn = "";
+    if (last && daysSinceISO(last.date) < 1) {
+      spacingWarn = `<span class="tag over">⚠ &lt;48h since last</span>`;
+    }
+    const disabled = pending.length === 0;
+    const cls = disabled ? "tile disabled" : "tile";
+    const action = disabled ? "" : `data-action="start-slot" data-week="${wk}" data-slot="${pending[0]}"`;
+    html += `<div class="${cls}" ${action}>
+      <div class="title">${kind}${disabled ? " — complete" : ""}</div>
+      <div class="meta">
+        <span>${doneCount}/${target} done this week</span>
+        <span>${lastStr}</span>
+        ${spacingWarn}
+      </div>
+    </div>`;
+  }
+  // Custom session tile — always available
+  html += `<div class="tile" data-action="open-custom-builder">
+    <div class="title">+ Custom session</div>
+    <div class="meta"><span>Pick any exercises for a one-off (shoulders+arms, accessory day, etc.)</span></div>
+  </div>`;
+  html += `</div>`;
+  return html;
+}
+
+function viewSwapPanel(target) {
+  const { weekIdx, slotKey, exIdx } = target;
+  const sess = state.currentBlock.prescriptions[weekIdx]?.[slotKey];
+  if (!sess) return "";
+  const ex = sess.exercises[exIdx];
+  const origMeta = EXERCISES[ex.exId];
+  if (!origMeta) return "";
+  const muscle = origMeta.primary;
+  const showAddForm = state.currentBlock._swapShowAdd;
+  let html = `<div class="card row spaced">
+    <div><b>Swap: ${origMeta.name}</b> <span class="muted">(${MUSCLE_LABEL[muscle]})</span></div>
+    <button data-action="close-swap">← Cancel</button>
+  </div>`;
+
+  html += `<div class="card"><h2>Same-muscle alternatives</h2>
+    <div class="muted" style="margin-bottom:8px;">Pick a replacement for this session only. Original prescription returns next session. Load fields clear; reps/RIR targets carry over.</div>`;
+  // Build candidates: same primary muscle, sort by category match first
+  const catRank = (c) => c === origMeta.cat ? 0 : (c === "cns_compound" ? 1 : c === "std_compound" ? 2 : 3);
+  const candidates = Object.entries(EXERCISES)
+    .filter(([id, m]) => m.primary === muscle && id !== ex.exId)
+    .sort((a, b) => catRank(a[1].cat) - catRank(b[1].cat) || a[1].name.localeCompare(b[1].name));
+  if (candidates.length === 0) {
+    html += `<div class="muted">No same-muscle alternatives in the library yet. Add a custom exercise below.</div>`;
+  } else {
+    // Group by category for readability
+    const byCat = { cns_compound: [], std_compound: [], isolation: [] };
+    candidates.forEach(([id, m]) => byCat[m.cat]?.push([id, m]));
+    const catLabels = { cns_compound: "Compound (CNS-taxing)", std_compound: "Compound", isolation: "Isolation" };
+    for (const cat of ["cns_compound", "std_compound", "isolation"]) {
+      if (byCat[cat].length === 0) continue;
+      html += `<div style="margin-bottom:8px;"><div class="muted" style="font-weight:600;margin-bottom:4px;">${catLabels[cat]}</div>`;
+      byCat[cat].forEach(([id, m]) => {
+        const sameCat = cat === origMeta.cat ? `<span class="tag in">same category</span>` : "";
+        html += `<div class="row spaced" style="padding:4px 0;">
+          <div>${m.name} <span class="muted">· ${m.rep[0]}–${m.rep[1]} reps</span> ${sameCat}</div>
+          <button class="small" data-action="do-swap" data-exid="${id}">Use</button>
+        </div>`;
+      });
+      html += `</div>`;
+    }
+  }
+  html += `</div>`;
+
+  // Custom add form
+  html += `<div class="card"><h2>Or add a custom exercise</h2>`;
+  if (!showAddForm) {
+    html += `<button data-action="show-add-custom">+ Add a custom exercise</button>`;
+  } else {
+    html += `<div class="row" style="gap:6px;margin-bottom:6px;"><span class="muted" style="width:90px;">Name</span>
+      <input type="text" id="custom-name" placeholder="e.g. Smith calf raise" style="flex:1;"></div>
+      <div class="row" style="gap:6px;margin-bottom:6px;"><span class="muted" style="width:90px;">Primary muscle</span>
+      <select id="custom-muscle">${MUSCLES.map(m => `<option value="${m}" ${m === muscle ? "selected" : ""}>${MUSCLE_LABEL[m]}</option>`).join("")}</select></div>
+      <div class="row" style="gap:6px;margin-bottom:6px;"><span class="muted" style="width:90px;">Category</span>
+      <select id="custom-cat">
+        <option value="cns_compound" ${origMeta.cat === "cns_compound" ? "selected" : ""}>Compound (CNS-taxing)</option>
+        <option value="std_compound" ${origMeta.cat === "std_compound" ? "selected" : ""}>Compound</option>
+        <option value="isolation" ${origMeta.cat === "isolation" ? "selected" : ""}>Isolation</option>
+      </select></div>
+      <div class="row" style="gap:6px;margin-bottom:6px;"><span class="muted" style="width:90px;">Rep range</span>
+      <input type="number" id="custom-rep-lo" min="1" max="30" value="${origMeta.rep[0]}" style="width:60px;">
+      <span class="muted">to</span>
+      <input type="number" id="custom-rep-hi" min="1" max="30" value="${origMeta.rep[1]}" style="width:60px;"></div>
+      <div class="row" style="gap:6px;margin-bottom:8px;"><span class="muted" style="width:90px;">Load increment (${state.user.unit})</span>
+      <input type="number" id="custom-inc" min="0.5" step="0.5" value="${origMeta.inc}" style="width:80px;"></div>
+      <button class="primary" data-action="save-custom-and-swap">Save and use this exercise</button>
+      <button data-action="cancel-add-custom">Cancel</button>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function viewCustomBuilder() {
+  const builder = state.currentBlock.customBuilder;
+  const picked = builder.exercises || [];
+  const pickedIds = new Set(picked.map(e => e.exId));
+  const search = (builder.search || "").toLowerCase();
+
+  let html = `<div class="card row spaced">
+    <div><b>Custom session builder</b></div>
+    <button data-action="cancel-custom">← Cancel</button>
+  </div>`;
+
+  html += `<div class="card"><h2>Your session (${picked.length} exercise${picked.length === 1 ? "" : "s"})</h2>`;
+  if (picked.length === 0) {
+    html += `<div class="muted">Pick exercises from the library below. Each defaults to 3 sets; you can change the count per exercise.</div>`;
+  } else {
+    picked.forEach((p, i) => {
+      const meta = EXERCISES[p.exId];
+      html += `<div class="row spaced" style="padding:6px 0; border-bottom:1px dashed var(--border);">
+        <div>${meta.name} <span class="muted">(${MUSCLE_LABEL[meta.primary]})</span></div>
+        <div class="row tight">
+          <input type="number" min="1" max="10" value="${p.targetSets}" data-action="custom-set-count" data-i="${i}" style="width:54px;">
+          <span class="muted">sets</span>
+          <button class="danger small" data-action="custom-remove" data-i="${i}">×</button>
+        </div>
+      </div>`;
+    });
+    html += `<div style="margin-top:12px;">
+      <button class="primary big" data-action="start-custom">Start session (${picked.length} exercises)</button>
+    </div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="card"><h2>Exercise library</h2>
+    <input type="text" placeholder="Search exercises or muscles..." value="${builder.search || ""}" data-action="custom-search" style="width:100%;margin-bottom:10px;">`;
+  for (const m of MUSCLES) {
+    const exs = Object.entries(EXERCISES)
+      .filter(([id, ex]) => ex.primary === m)
+      .filter(([id, ex]) => {
+        if (!search) return true;
+        return ex.name.toLowerCase().includes(search) || m.toLowerCase().includes(search) || MUSCLE_LABEL[m].toLowerCase().includes(search);
+      });
+    if (exs.length === 0) continue;
+    html += `<div style="margin-bottom:10px;"><div class="muted" style="font-weight:600;margin-bottom:4px;">${MUSCLE_LABEL[m]}</div>`;
+    exs.forEach(([id, ex]) => {
+      const already = pickedIds.has(id);
+      const catLabel = ex.cat === "cns_compound" ? "compound (CNS)" : ex.cat === "std_compound" ? "compound" : "isolation";
+      html += `<div class="row spaced" style="padding:4px 0;">
+        <div>${ex.name} <span class="muted">· ${ex.rep[0]}–${ex.rep[1]} reps · ${catLabel}</span></div>
+        ${already
+          ? `<span class="tag in">✓ added</span>`
+          : `<button class="small" data-action="custom-add" data-exid="${id}">+ Add</button>`}
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function viewActiveSession(activeSlot) {
+  const { weekIdx, slotKey } = activeSlot;
+  const sess = state.currentBlock.prescriptions[weekIdx]?.[slotKey];
+  if (!sess) return `<div class="card">Session not found.</div>`;
+  const fbKey = `${weekIdx}|${slotKey}`;
+  const headerLabel = sess.kind === "Custom"
+    ? `Custom session (${sess.exercises.length} exercises)`
+    : `${sess.kind} session ${sess.instance}/${state.currentBlock.weeklyTargets[sess.kind]}`;
+  let body = `<div class="card row spaced">
+    <div><b>${headerLabel}</b></div>
+    <button data-action="cancel-session">← Back to picker</button>
+  </div>`;
+  body += renderPreSessionFeedback(sess, fbKey);
+  body += `<div class="card"><h2>Exercises</h2>`;
+  sess.exercises.forEach((ex, exIdx) => {
+    body += renderExercise(ex, weekIdx, slotKey, exIdx, false);
+  });
+  body += `</div>`;
+  body += renderPostSessionFeedback(sess, fbKey);
+  body += `<div class="card"><button class="primary big" data-action="save-session">Save session</button></div>`;
+  return body;
+}
+
+function renderExercise(ex, weekIdx, slotKey, exIdx, isCatchup) {
+  const meta = EXERCISES[ex.exId];
+  if (!meta) return "";
+  const sets = ex.sets || [];
+  while (sets.length < (ex.targetSets || 0)) {
+    sets.push({ plannedReps: meta.rep[0], plannedLoad: null, plannedRIR: RIR_LADDER[weekIdx], weight: null, reps: null, rir: null });
+  }
+  const tag = ex.required ? `<span class="tag req">required</span>` : `<span class="tag float">floating</span>`;
+  const cuTag = isCatchup ? `<span class="tag">catch-up</span>` : "";
+  let pullupHint = "";
+  if (ex.exId === "pullup" && weekIdx === 0) {
+    pullupHint = `<div class="muted">W1 target: drop one rep per set (e.g. 9/7/5) to leave RIR 3.</div>`;
+  }
+  const rxFirst = sets[0] || {};
+  const headerRx = rxFirst.plannedLoad != null
+    ? `${rxFirst.plannedLoad} ${state.user.unit} × ${rxFirst.plannedReps} @ RIR ${rxFirst.plannedRIR}`
+    : `${rxFirst.plannedReps} reps @ RIR ${rxFirst.plannedRIR} ${meta.bw ? "(BW)" : "(set load on first set)"}`;
+  const swapBtn = `<button class="small" data-action="open-swap" data-week="${weekIdx}" data-slot="${slotKey}" data-ex="${exIdx}">Swap</button>`;
+  const swapInfo = ex.originalExId
+    ? `<div class="muted">↻ Swapped from <i>${(EXERCISES[ex.originalExId] || {}).name || ex.originalExId}</i>${ex.swapNote ? ` — ${ex.swapNote}` : ""}</div>`
+    : "";
+  let html = `<div class="exgroup">
+    <div class="row spaced">
+      <div><b>${meta.name}</b> ${tag} ${cuTag}</div>
+      <div class="row tight">
+        <span class="muted">${ex.targetSets} sets · ${meta.rep[0]}–${meta.rep[1]} reps · ${RIR_FLOOR[meta.cat] === 1 ? "RIR≥1" : "fail OK"}</span>
+        ${swapBtn}
+      </div>
+    </div>
+    ${swapInfo}
+    <div class="muted">Prescription: ${headerRx}${ex.rxNote ? ` · <i>${ex.rxNote}</i>` : ""}</div>
+    ${pullupHint}
+    <div style="margin-top:6px;">
+      <div class="set-row"><span></span><label>Weight</label><label>Reps</label><label>RIR</label><span></span></div>`;
+  for (let i = 0; i < ex.targetSets; i++) {
+    const s = sets[i] || {};
+    html += `<div class="set-row">
+        <span class="idx">${i + 1}</span>
+        <input type="number" step="0.5" placeholder="${s.plannedLoad != null ? s.plannedLoad : (meta.bw ? "BW" : "—")}" value="${s.weight ?? ""}"
+          data-set-input data-week="${weekIdx}" data-slot="${slotKey}" data-ex="${exIdx}" data-i="${i}" data-field="weight" data-catchup="${isCatchup ? 1 : 0}">
+        <input type="number" min="0" placeholder="${s.plannedReps}" value="${s.reps ?? ""}"
+          data-set-input data-week="${weekIdx}" data-slot="${slotKey}" data-ex="${exIdx}" data-i="${i}" data-field="reps" data-catchup="${isCatchup ? 1 : 0}">
+        <input type="number" min="0" max="5" placeholder="${s.plannedRIR}" value="${s.rir ?? ""}"
+          data-set-input data-week="${weekIdx}" data-slot="${slotKey}" data-ex="${exIdx}" data-i="${i}" data-field="rir" data-catchup="${isCatchup ? 1 : 0}">
+        ${(s.reps != null && s.weight != null) ? `<span class="tag done">✓</span>` : `<span></span>`}
+      </div>`;
+  }
+  html += `</div></div>`;
+  return html;
+}
+
+function musclesInSession(sess) {
+  const set = new Set();
+  for (const ex of sess.exercises || []) {
+    const m = EXERCISES[ex.exId]?.primary;
+    if (m) set.add(m);
+  }
+  return Array.from(set);
+}
+
+function renderPreSessionFeedback(sess, fbKey) {
+  const muscles = musclesInSession(sess);
+  if (muscles.length === 0) return "";
+  const fb = (state.currentBlock.feedback[fbKey] && state.currentBlock.feedback[fbKey].pre) || {};
+  let html = `<div class="card"><h2>Pre-session check-in</h2>
+    <div class="muted" style="margin-bottom:8px;">For each muscle, how recovered since the last session?</div>`;
+  for (const m of muscles) {
+    const cur = fb[m] || { soreness: 1, jointPain: 0, perf: 1 };
+    html += `<div style="margin-bottom:6px;"><b>${MUSCLE_LABEL[m]}</b>`;
+    html += scaleRow("Soreness", m, "soreness", cur.soreness, ["healed early","just in time","still sore","very sore"], fbKey, "pre");
+    html += scaleRow("Joint pain", m, "jointPain", cur.jointPain, ["none","mild","moderate","high"], fbKey, "pre");
+    html += scaleRow("Perf vs last", m, "perf", cur.perf, ["better","same","worse"], fbKey, "pre");
+    html += `</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderPostSessionFeedback(sess, fbKey) {
+  const muscles = musclesInSession(sess);
+  if (muscles.length === 0) return "";
+  const fb = (state.currentBlock.feedback[fbKey] && state.currentBlock.feedback[fbKey].post) || {};
+  let html = `<div class="card"><h2>End-of-session check-out</h2>
+    <div class="muted" style="margin-bottom:8px;">Rate pump and total workload per muscle after this session.</div>`;
+  for (const m of muscles) {
+    const cur = fb[m] || { pump: 2, workload: 1 };
+    html += `<div style="margin-bottom:6px;"><b>${MUSCLE_LABEL[m]}</b>`;
+    html += scaleRow("Pump", m, "pump", cur.pump, ["none","low","moderate","excellent"], fbKey, "post");
+    html += scaleRow("Workload", m, "workload", cur.workload, ["easy","pretty good","hard","crushed"], fbKey, "post");
+    html += `</div>`;
+  }
+  html += `</div>`;
+  return html;
+}
+
+function scaleRow(label, muscle, key, value, options, fbKey, when) {
+  let html = `<div class="fb-grid"><span class="muted">${label}</span><div class="scale">`;
+  options.forEach((opt, i) => {
+    const sel = i === value ? "sel" : "";
+    html += `<button class="${sel}" data-action="set-fb" data-muscle="${muscle}" data-key="${key}" data-val="${i}" data-fbkey="${fbKey}" data-when="${when}" title="${opt}">${i}</button>`;
+  });
+  html += `</div></div>`;
+  return html;
+}
+
+function viewWeekSnapshot(wk) {
+  const completed = completedSlots(state, wk).sort((a, b) => a.completedDate.localeCompare(b.completedDate));
+  let html = `<div class="card"><h2>This week so far</h2>`;
+  if (completed.length === 0) {
+    html += `<div class="muted">No sessions completed yet this week.</div>`;
+  } else {
+    completed.forEach(c => {
+      const setsLogged = c.exercises.reduce((a, e) => a + (e.sets || []).filter(s => s.reps != null).length, 0);
+      const label = c.kind === "Custom" ? `Custom (${c.exercises.length}ex)` : `${c.kind} ${c.instance}`;
+      html += `<div class="row spaced" style="padding:4px 0;">
+        <div><b>${label}</b> <span class="muted">${c.completedDate}</span></div>
+        <div class="muted">${setsLogged} sets logged</div>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
+function viewWeeklyVolume(wk) {
+  const logged = weeklyVolume(state, wk, "logged");
+  const planned = weeklyVolume(state, wk, "planned");
+  let html = `<div class="card"><h2>Week ${wk + 1} volume — logged sets</h2>
+    <div class="legend">
+      <span><i style="background:var(--good);"></i>in MAV</span>
+      <span><i style="background:var(--bad);"></i>under MEV</span>
+      <span><i style="background:var(--warn);"></i>over MAV / near MRV</span>
+    </div>`;
+  const muscles = MUSCLES.filter(m => planned[m] > 0 || logged[m] > 0);
+  muscles.forEach(m => {
+    const lm = state.landmarks[m];
+    const s = volStatus(logged[m], lm);
+    const pct = Math.min(100, (logged[m] / Math.max(lm.MRV, 1)) * 100);
+    const cls = statusTagClass(s);
+    const fillCls = (s === "under_MV" || s === "under_MEV") ? "under" : (s === "over_MRV" || s === "near_MRV" ? "over" : "in");
+    html += `<div class="muscle-row">
+      <div>${MUSCLE_LABEL[m]}</div>
+      <div class="bar" title="MEV ${lm.MEV} · MAV ${lm.MAV.join("–")} · MRV ${lm.MRV}">
+        <div class="bar-fill ${fillCls}" style="width:${pct}%"></div>
+      </div>
+      <div class="row tight"><span class="muted">${logged[m]}/${planned[m]}</span><span class="tag ${cls}">${statusLabel(s)}</span></div>
+    </div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+// ============================================================================
+// VIEW: BLOCK
+// ============================================================================
+
+function viewBlock() {
+  const block = state.currentBlock;
+  const wk = currentWeekIdx(state);
+  const weekRIR = RIR_LADDER[wk];
+  const deload = checkDeload(state);
+  let html = `<h1>Block 1 — recovery-recalibration</h1>`;
+  html += `<div class="kpi">
+    <div class="box"><div class="v">${wk + 1}/${block.lengthWeeks}</div><div class="k">Week</div></div>
+    <div class="box"><div class="v">${weekRIR}</div><div class="k">Muscle RIR</div></div>
+    <div class="box"><div class="v">${deload ? "⚠" : "OK"}</div><div class="k">${deload || "Recovery"}</div></div>
+  </div>`;
+  html += viewWeeklyVolume(wk);
+
+  html += `<div class="card"><h2>Block progress</h2>`;
+  html += `<table><thead><tr><th>Kind</th>`;
+  for (let w = 0; w < block.lengthWeeks; w++) html += `<th>W${w + 1}</th>`;
+  html += `</tr></thead><tbody>`;
+  for (const kind of userKinds()) {
+    html += `<tr><td><b>${kind}</b></td>`;
+    for (let w = 0; w < block.lengthWeeks; w++) {
+      ensureWeekBuilt(state, w);
+      const wkObj = block.prescriptions[w];
+      const target = block.weeklyTargets[kind] || 0;
+      let done = 0;
+      for (let i = 1; i <= target; i++) {
+        const sk = slotKey(kind, i);
+        if (wkObj[sk]?.completedDate) done++;
+      }
+      html += `<td>${done}/${target}</td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  if (block._lastAutoregNotes && block._lastAutoregNotes.length) {
+    html += `<div class="card"><h2>Last autoregulation actions</h2>`;
+    block._lastAutoregNotes.slice(-10).reverse().forEach(n => {
+      html += `<div class="muted">${MUSCLE_LABEL[n.muscle]}: Δ ${n.delta > 0 ? "+" : ""}${n.delta} sets → ${n.appliedTo} <i>(${n.reason})</i></div>`;
+    });
+    html += `</div>`;
+  }
+
+  return html;
+}
+
+// ============================================================================
+// VIEW: HISTORY
+// ============================================================================
+
+function viewHistory() {
+  const block = state.currentBlock;
+  let html = `<h1>History</h1>`;
+  html += `<div class="card"><h2>Logged exercises this block</h2>`;
+  const perEx = {};
+  for (let w = 0; w < block.lengthWeeks; w++) {
+    const wk = block.prescriptions[w] || {};
+    for (const [sk, sess] of Object.entries(wk)) {
+      for (const ex of sess.exercises || []) {
+        const completed = (ex.sets || []).filter(s => s.reps != null && s.weight != null);
+        if (completed.length === 0) continue;
+        if (!perEx[ex.exId]) perEx[ex.exId] = [];
+        perEx[ex.exId].push({ week: w + 1, slot: sk, date: sess.completedDate, sets: completed });
+      }
+    }
+  }
+  if (Object.keys(perEx).length === 0) {
+    html += `<div class="muted">No logged sets yet.</div>`;
+  } else {
+    for (const [exId, entries] of Object.entries(perEx)) {
+      const meta = EXERCISES[exId];
+      html += `<div class="exgroup"><b>${meta.name}</b>`;
+      entries.sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+      entries.forEach(e => {
+        const summary = e.sets.map(s => `${s.weight ?? "—"}×${s.reps}@${s.rir ?? "?"}`).join("  ");
+        html += `<div class="muted">W${e.week} ${e.slot} (${e.date || "in progress"}) — ${summary}</div>`;
+      });
+      html += `</div>`;
+    }
+  }
+  html += `</div>`;
+  return html;
+}
+
+// ============================================================================
+// VIEW: SETTINGS
+// ============================================================================
+
+function viewSettings() {
+  let html = `<h1>Settings</h1>`;
+  html += `<div class="card"><h2>User</h2>
+    <div class="row" style="margin-bottom:8px;">
+      <span class="muted">Unit</span>
+      <select data-action="set-unit">
+        <option value="kg" ${state.user.unit === "kg" ? "selected" : ""}>kg</option>
+        <option value="lb" ${state.user.unit === "lb" ? "selected" : ""}>lb</option>
+      </select>
+    </div>
+    <div class="row" style="margin-bottom:8px;">
+      <span class="muted">Specialization cap</span>
+      <input type="number" min="1" max="6" value="${state.user.specializationCap}" data-action="set-spec-cap">
+    </div>
+  </div>`;
+
+  html += `<div class="card"><h2>Nutritional phase</h2>
+    <div class="muted" style="margin-bottom:8px;">Affects how the engine progresses you. Switch when your diet phase changes.</div>
+    <div class="row tight">`;
+  for (const p of ["cut", "maintenance", "surplus"]) {
+    const sel = (state.user.phase || "maintenance") === p ? "primary" : "";
+    html += `<button class="${sel}" data-action="set-phase" data-phase="${p}">${phaseLabel(p)}</button>`;
+  }
+  html += `</div>
+    <div class="muted" style="margin-top:8px;">${phaseDescription(state.user.phase || "maintenance")}</div>
+  </div>`;
+
+  html += `<div class="card"><h2>Weekly targets</h2>
+    <div class="muted" style="margin-bottom:8px;">How many of each kind do you aim for in a week? Adjust to match your bandwidth.</div>`;
+  for (const kind of userKinds()) {
+    html += `<div class="row" style="margin-bottom:6px;">
+      <span style="width:80px;"><b>${kind}</b></span>
+      <input type="number" min="0" max="5" value="${state.currentBlock.weeklyTargets[kind]}" data-action="set-target" data-kind="${kind}">
+      <span class="muted">sessions/week</span>
+    </div>`;
+  }
+  html += `<div class="muted" style="margin-top:6px;">Changes apply to future weeks only; the current week's already-built slots are not removed.</div></div>`;
+
+  html += `<div class="card"><h2>Volume landmarks (sets/week)</h2>
+    <div class="muted" style="margin-bottom:8px;">Edit per-muscle.</div>
+    <table><thead><tr><th>Muscle</th><th>MV</th><th>MEV</th><th>MAV lo</th><th>MAV hi</th><th>MRV</th></tr></thead><tbody>`;
+  for (const m of MUSCLES) {
+    const lm = state.landmarks[m];
+    html += `<tr><td>${MUSCLE_LABEL[m]}</td>
+      <td><input class="compact" type="number" value="${lm.MV}" data-action="set-lm" data-m="${m}" data-k="MV"></td>
+      <td><input class="compact" type="number" value="${lm.MEV}" data-action="set-lm" data-m="${m}" data-k="MEV"></td>
+      <td><input class="compact" type="number" value="${lm.MAV[0]}" data-action="set-lm" data-m="${m}" data-k="MAV0"></td>
+      <td><input class="compact" type="number" value="${lm.MAV[1]}" data-action="set-lm" data-m="${m}" data-k="MAV1"></td>
+      <td><input class="compact" type="number" value="${lm.MRV}" data-action="set-lm" data-m="${m}" data-k="MRV"></td>
+    </tr>`;
+  }
+  html += `</tbody></table></div>`;
+
+  html += `<div class="card"><h2>Block controls</h2>
+    <div class="row" style="gap:8px;">
+      <button data-action="trigger-deload" class="danger">I'm cooked — trigger early deload</button>
+      <button data-action="advance-week">Advance to next week (manual)</button>
+      <button data-action="reset-block" class="danger">Reset Block 1</button>
+    </div>
+  </div>`;
+
+  html += `<div class="card"><h2>Backup / Restore</h2>
+    <div class="row" style="gap:8px;">
+      <button data-action="export-json">Export JSON</button>
+      <label class="row" style="gap:6px; margin:0;">
+        <span>Import:</span>
+        <input type="file" accept="application/json" data-action="import-json">
+      </label>
+    </div>
+  </div>`;
+
+  html += `<div class="card"><h2>Glute exercise</h2>
+    <div class="muted" style="margin-bottom:8px;">Toggle back extension ↔ hip thrust for all Legs sessions.</div>
+    <button data-action="swap-glute">Toggle (current: ${currentGluteExercise()})</button>
+  </div>`;
+
+  return html;
+}
+
+function currentGluteExercise() {
+  const wk = currentWeekIdx(state);
+  ensureWeekBuilt(state, wk);
+  for (const sess of Object.values(state.currentBlock.prescriptions[wk] || {})) {
+    if (sess.kind === "Legs") {
+      if ((sess.exercises || []).find(e => e.exId === "hip_thrust")) return "Hip thrust";
+      return "Back extension";
+    }
+  }
+  return "Back extension";
+}
+
+// ============================================================================
+// HANDLERS
+// ============================================================================
+
+function bindHandlers() {
+  document.querySelectorAll("nav button[data-view]").forEach(b => {
+    b.classList.toggle("active", b.dataset.view === activeView);
+    b.onclick = () => { activeView = b.dataset.view; render(); };
+  });
+
+  // User menu
+  const umBtn = document.querySelector("[data-action=open-user-menu]");
+  if (umBtn) umBtn.onclick = () => { state._uiOverlay = state._uiOverlay === "user-menu" ? null : "user-menu"; saveState(); render(); };
+  const closeUm = document.querySelector("[data-action=close-user-menu]");
+  if (closeUm) closeUm.onclick = () => { state._uiOverlay = null; saveState(); render(); };
+  document.querySelectorAll("[data-action=switch-user]").forEach(el => {
+    el.onclick = () => {
+      const uid = el.dataset.uid;
+      saveState();
+      setActiveUserId(uid);
+      activeUserId = uid;
+      state = loadUserState(uid) || emptyUserState("");
+      if (state.customExercises) Object.assign(EXERCISES, state.customExercises);
+      state._uiOverlay = null;
+      saveState();
+      render();
+    };
+  });
+  document.querySelectorAll("[data-action=rename-user]").forEach(el => {
+    el.onclick = () => {
+      const uid = el.dataset.uid;
+      const users = loadUsersList();
+      const u = users.find(x => x.id === uid);
+      if (!u) return;
+      const newName = prompt("New name?", u.name);
+      if (!newName) return;
+      u.name = newName.trim();
+      saveUsersList(users);
+      if (uid === getActiveUserId()) { state.user.name = newName.trim(); saveState(); }
+      render();
+    };
+  });
+  document.querySelectorAll("[data-action=delete-user]").forEach(el => {
+    el.onclick = () => {
+      const uid = el.dataset.uid;
+      const users = loadUsersList();
+      if (users.length <= 1) { alert("Can't delete the only user."); return; }
+      if (!confirm("Delete this user and all their data permanently?")) return;
+      const updated = users.filter(u => u.id !== uid);
+      saveUsersList(updated);
+      localStorage.removeItem(USER_STATE_KEY(uid));
+      if (uid === getActiveUserId()) {
+        const next = updated[0].id;
+        setActiveUserId(next);
+        activeUserId = next;
+        state = loadUserState(next);
+      }
+      render();
+    };
+  });
+  const addUserBtn = document.querySelector("[data-action=add-user]");
+  if (addUserBtn) addUserBtn.onclick = () => {
+    const id = newUserId();
+    const st = emptyUserState("");
+    st.onboarding = { step: 0, draftKinds: ["Pull","Push","Legs"], draftTargets: {Pull:2,Push:2,Legs:1}, draftTemplate: {Pull:[],Push:[],Legs:[]}, currentKindIdx: 0, search: "" };
+    saveUserState(id, st);
+    const users = loadUsersList();
+    users.push({ id, name: "(new user)", createdAt: new Date().toISOString() });
+    saveUsersList(users);
+    setActiveUserId(id);
+    activeUserId = id;
+    state = st;
+    state._uiOverlay = null;
+    saveState();
+    render();
+  };
+
+  // Onboarding handlers
+  const obWelcomeFresh = document.querySelector("[data-action=ob-build-fresh]");
+  if (obWelcomeFresh) obWelcomeFresh.onclick = () => {
+    state.onboarding = { step: 1, draftKinds: ["Pull","Push","Legs"], draftTargets: {Pull:2,Push:2,Legs:1}, draftTemplate: {Pull:[],Push:[],Legs:[]}, currentKindIdx: 0, search: "" };
+    saveState(); render();
+  };
+  const obWelcomeExample = document.querySelector("[data-action=ob-use-example]");
+  if (obWelcomeExample) obWelcomeExample.onclick = () => {
+    // Adopt Bhaskar's known-good template as the starting point
+    state.user.kinds = ["Pull","Push","Legs"];
+    state.user.template = defaultTemplateFromBlock1();
+    state.user.name = state.user.name || "Lifter";
+    // Initialize block
+    const today = new Date();
+    state.currentBlock = {
+      id: "block-1",
+      startDate: isoDate(startOfWeek(today)),
+      lengthWeeks: 5,
+      focus: "recovery_recalibration",
+      weeklyTargets: { Pull: 2, Push: 2, Legs: 1 },
+      prescriptions: {},
+      feedback: {},
+      activeSlot: null,
+      userCookedOverride: false
+    };
+    state.onboarding = null;
+    // Update users list with current name
+    const users = loadUsersList();
+    const u = users.find(x => x.id === getActiveUserId());
+    if (u) { u.name = state.user.name; saveUsersList(users); }
+    saveState(); render();
+  };
+
+  document.querySelectorAll("[data-action=ob-prev]").forEach(el => {
+    el.onclick = () => { state.onboarding.step = Math.max(0, state.onboarding.step - 1); saveState(); render(); };
+  });
+
+  const obNextProfile = document.querySelector("[data-action=ob-next-from-profile]");
+  if (obNextProfile) obNextProfile.onclick = () => {
+    const name = (document.getElementById("ob-name") || {}).value || "";
+    state.user.name = name.trim() || "Lifter";
+    state.user.unit = (document.getElementById("ob-unit") || {}).value || "kg";
+    state.user.phase = (document.getElementById("ob-phase") || {}).value || "maintenance";
+    // Update users list label
+    const users = loadUsersList();
+    const u = users.find(x => x.id === getActiveUserId());
+    if (u) { u.name = state.user.name; saveUsersList(users); }
+    state.onboarding.step = 2;
+    saveState(); render();
+  };
+
+  document.querySelectorAll("[data-ob-kind-name]").forEach(inp => {
+    inp.onchange = e => {
+      const i = +e.target.dataset.obKindName;
+      const oldName = state.onboarding.draftKinds[i];
+      const newName = e.target.value.trim() || `Day ${i+1}`;
+      state.onboarding.draftKinds[i] = newName;
+      state.onboarding.draftTargets[newName] = state.onboarding.draftTargets[oldName] ?? 0;
+      delete state.onboarding.draftTargets[oldName];
+      state.onboarding.draftTemplate[newName] = state.onboarding.draftTemplate[oldName] || [];
+      delete state.onboarding.draftTemplate[oldName];
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-ob-kind-target]").forEach(inp => {
+    inp.onchange = e => {
+      const i = +e.target.dataset.obKindTarget;
+      const k = state.onboarding.draftKinds[i];
+      state.onboarding.draftTargets[k] = Math.max(0, +e.target.value || 0);
+      saveState();
+    };
+  });
+  document.querySelectorAll("[data-action=ob-remove-kind]").forEach(el => {
+    el.onclick = () => {
+      const i = +el.dataset.i;
+      const k = state.onboarding.draftKinds[i];
+      state.onboarding.draftKinds.splice(i, 1);
+      delete state.onboarding.draftTargets[k];
+      delete state.onboarding.draftTemplate[k];
+      saveState(); render();
+    };
+  });
+  const addKindBtn = document.querySelector("[data-action=ob-add-kind]");
+  if (addKindBtn) addKindBtn.onclick = () => {
+    const n = state.onboarding.draftKinds.length;
+    const name = `Day ${n+1}`;
+    state.onboarding.draftKinds.push(name);
+    state.onboarding.draftTargets[name] = 1;
+    state.onboarding.draftTemplate[name] = [];
+    saveState(); render();
+  };
+  const obNextSched = document.querySelector("[data-action=ob-next-from-schedule]");
+  if (obNextSched) obNextSched.onclick = () => {
+    // Ensure draftTemplate has all kinds
+    state.onboarding.draftKinds.forEach(k => {
+      if (!state.onboarding.draftTemplate[k]) state.onboarding.draftTemplate[k] = [];
+    });
+    state.onboarding.step = 3;
+    state.onboarding.currentKindIdx = 0;
+    saveState(); render();
+  };
+
+  // Build step handlers
+  const obSearch = document.querySelector("[data-ob-search]");
+  if (obSearch) {
+    let t;
+    obSearch.oninput = () => {
+      state.onboarding.search = obSearch.value;
+      clearTimeout(t);
+      t = setTimeout(() => { saveState(); render(); document.querySelector("[data-ob-search]")?.focus(); }, 200);
+    };
+  }
+  document.querySelectorAll("[data-action=ob-add-ex]").forEach(el => {
+    el.onclick = () => {
+      const k = state.onboarding.draftKinds[state.onboarding.currentKindIdx];
+      const exId = el.dataset.exid;
+      state.onboarding.draftTemplate[k] = state.onboarding.draftTemplate[k] || [];
+      state.onboarding.draftTemplate[k].push({ exId, baseSets: 3, required: true });
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=ob-remove-ex]").forEach(el => {
+    el.onclick = () => {
+      const k = state.onboarding.draftKinds[state.onboarding.currentKindIdx];
+      state.onboarding.draftTemplate[k].splice(+el.dataset.i, 1);
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-ob-baseset]").forEach(inp => {
+    inp.onchange = e => {
+      const i = +e.target.dataset.obBaseset;
+      const k = state.onboarding.draftKinds[state.onboarding.currentKindIdx];
+      state.onboarding.draftTemplate[k][i].baseSets = Math.max(1, Math.min(10, +e.target.value || 1));
+      saveState();
+    };
+  });
+  document.querySelectorAll("[data-ob-req]").forEach(inp => {
+    inp.onchange = e => {
+      const i = +e.target.dataset.obReq;
+      const k = state.onboarding.draftKinds[state.onboarding.currentKindIdx];
+      state.onboarding.draftTemplate[k][i].required = !!e.target.checked;
+      saveState();
+    };
+  });
+  const obBuildPrev = document.querySelector("[data-action=ob-build-prev]");
+  if (obBuildPrev) obBuildPrev.onclick = () => {
+    if (state.onboarding.currentKindIdx === 0) { state.onboarding.step = 2; }
+    else { state.onboarding.currentKindIdx -= 1; }
+    saveState(); render();
+  };
+  const obBuildNext = document.querySelector("[data-action=ob-build-next]");
+  if (obBuildNext) obBuildNext.onclick = () => {
+    if (state.onboarding.currentKindIdx < state.onboarding.draftKinds.length - 1) {
+      state.onboarding.currentKindIdx += 1;
+    } else {
+      state.onboarding.step = 4;
+    }
+    saveState(); render();
+  };
+
+  // Review -> start block
+  const obStart = document.querySelector("[data-action=ob-start-block]");
+  if (obStart) obStart.onclick = () => {
+    const ob = state.onboarding;
+    state.user.kinds = [...ob.draftKinds];
+    state.user.template = {};
+    for (const k of ob.draftKinds) {
+      state.user.template[k] = (ob.draftTemplate[k] || []).map(e => ({
+        exId: e.exId, baseSets: e.baseSets, deloadSets: Math.max(1, Math.floor((e.baseSets || 0)/2)), required: e.required
+      }));
+    }
+    const today = new Date();
+    state.currentBlock = {
+      id: "block-1",
+      startDate: isoDate(startOfWeek(today)),
+      lengthWeeks: 5,
+      focus: "user-built",
+      weeklyTargets: { ...ob.draftTargets },
+      prescriptions: {},
+      feedback: {},
+      activeSlot: null,
+      userCookedOverride: false
+    };
+    state.onboarding = null;
+    saveState();
+    activeView = "today";
+    render();
+  };
+  document.querySelectorAll("[data-action=start-slot]").forEach(el => {
+    el.onclick = () => {
+      const wk = +el.dataset.week;
+      const sk = el.dataset.slot;
+      state.currentBlock.activeSlot = { weekIdx: wk, slotKey: sk };
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=cancel-session]").forEach(el => {
+    el.onclick = () => { state.currentBlock.activeSlot = null; saveState(); render(); };
+  });
+  document.querySelectorAll("[data-action=open-swap]").forEach(el => {
+    el.onclick = () => {
+      state.currentBlock.swapTarget = {
+        weekIdx: +el.dataset.week,
+        slotKey: el.dataset.slot,
+        exIdx: +el.dataset.ex
+      };
+      state.currentBlock._swapShowAdd = false;
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=close-swap]").forEach(el => {
+    el.onclick = () => {
+      state.currentBlock.swapTarget = null;
+      state.currentBlock._swapShowAdd = false;
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=do-swap]").forEach(el => {
+    el.onclick = () => {
+      const target = state.currentBlock.swapTarget;
+      if (!target) return;
+      const sess = state.currentBlock.prescriptions[target.weekIdx][target.slotKey];
+      const ex = sess.exercises[target.exIdx];
+      if (!ex.originalExId) ex.originalExId = ex.exId;
+      ex.exId = el.dataset.exid;
+      // Clear load fields; keep rep/RIR plans
+      for (const s of ex.sets) {
+        s.weight = null;
+        s.plannedLoad = null;
+      }
+      ex.rxNote = "swapped — set working load on first set";
+      state.currentBlock.swapTarget = null;
+      state.currentBlock._swapShowAdd = false;
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=show-add-custom]").forEach(el => {
+    el.onclick = () => { state.currentBlock._swapShowAdd = true; saveState(); render(); };
+  });
+  document.querySelectorAll("[data-action=cancel-add-custom]").forEach(el => {
+    el.onclick = () => { state.currentBlock._swapShowAdd = false; saveState(); render(); };
+  });
+  const saveCustom = document.querySelector("[data-action=save-custom-and-swap]");
+  if (saveCustom) saveCustom.onclick = () => {
+    const name = document.getElementById("custom-name").value.trim();
+    if (!name) { alert("Name required."); return; }
+    const muscle = document.getElementById("custom-muscle").value;
+    const cat = document.getElementById("custom-cat").value;
+    const lo = +document.getElementById("custom-rep-lo").value || 8;
+    const hi = +document.getElementById("custom-rep-hi").value || 12;
+    const inc = +document.getElementById("custom-inc").value || 2.5;
+    const id = "custom_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const meta = { name, primary: muscle, cat, rep: [Math.min(lo, hi), Math.max(lo, hi)], inc };
+    state.customExercises = state.customExercises || {};
+    state.customExercises[id] = meta;
+    EXERCISES[id] = meta;
+    // Perform the swap immediately
+    const target = state.currentBlock.swapTarget;
+    if (target) {
+      const sess = state.currentBlock.prescriptions[target.weekIdx][target.slotKey];
+      const ex = sess.exercises[target.exIdx];
+      if (!ex.originalExId) ex.originalExId = ex.exId;
+      ex.exId = id;
+      for (const s of ex.sets) { s.weight = null; s.plannedLoad = null; }
+      ex.rxNote = "swapped to custom — set working load on first set";
+    }
+    state.currentBlock.swapTarget = null;
+    state.currentBlock._swapShowAdd = false;
+    saveState(); render();
+  };
+
+  document.querySelectorAll("[data-action=open-custom-builder]").forEach(el => {
+    el.onclick = () => {
+      state.currentBlock.customBuilder = { exercises: [], search: "" };
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=cancel-custom]").forEach(el => {
+    el.onclick = () => { state.currentBlock.customBuilder = null; saveState(); render(); };
+  });
+  document.querySelectorAll("[data-action=custom-add]").forEach(el => {
+    el.onclick = () => {
+      const exId = el.dataset.exid;
+      state.currentBlock.customBuilder.exercises.push({ exId, targetSets: 3 });
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=custom-remove]").forEach(el => {
+    el.onclick = () => {
+      state.currentBlock.customBuilder.exercises.splice(+el.dataset.i, 1);
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=custom-set-count]").forEach(el => {
+    el.onchange = () => {
+      const i = +el.dataset.i;
+      const v = Math.max(1, Math.min(10, +el.value || 1));
+      state.currentBlock.customBuilder.exercises[i].targetSets = v;
+      saveState();
+    };
+  });
+  document.querySelectorAll("[data-action=custom-search]").forEach(el => {
+    let timer = null;
+    el.oninput = () => {
+      state.currentBlock.customBuilder.search = el.value;
+      clearTimeout(timer);
+      timer = setTimeout(() => { saveState(); render(); document.querySelector("[data-action=custom-search]")?.focus(); }, 200);
+    };
+  });
+  document.querySelectorAll("[data-action=start-custom]").forEach(el => {
+    el.onclick = () => {
+      const builder = state.currentBlock.customBuilder;
+      if (!builder || builder.exercises.length === 0) return;
+      const wk = currentWeekIdx(state);
+      ensureWeekBuilt(state, wk);
+      const date = isoDate(new Date());
+      const wkObj = state.currentBlock.prescriptions[wk];
+      let counter = 1;
+      while (wkObj[`Custom_${date}_${counter}`]) counter++;
+      const sk = `Custom_${date}_${counter}`;
+      const weekRIR = RIR_LADDER[wk];
+      wkObj[sk] = {
+        kind: "Custom",
+        instance: counter,
+        completedDate: null,
+        exercises: builder.exercises.map(b => {
+          const prev = findLastCompletedExercise(state, b.exId);
+          const rx = nextRx(b.exId, prev, weekRIR, state.user.phase);
+          const sets = [];
+          for (let i = 0; i < b.targetSets; i++) {
+            sets.push({
+              plannedReps: rx.reps, plannedLoad: rx.load, plannedRIR: rx.rir,
+              weight: null, reps: null, rir: null
+            });
+          }
+          return { exId: b.exId, targetSets: b.targetSets, required: true, sets, rxNote: rx.note };
+        })
+      };
+      state.currentBlock.customBuilder = null;
+      state.currentBlock.activeSlot = { weekIdx: wk, slotKey: sk };
+      saveState(); render();
+    };
+  });
+  document.querySelectorAll("[data-action=open-catchup]").forEach(el => {
+    el.onclick = () => {
+      alert("Catch-up flow: open a pending floating exercise from Block view or just start any Pull/Push/Legs session — uncompleted floating sets will appear there.");
+    };
+  });
+  document.querySelectorAll("[data-set-input]").forEach(input => {
+    input.onchange = e => {
+      const { week, slot, ex, i, field } = e.target.dataset;
+      const w = +week, exi = +ex, ii = +i;
+      const sess = state.currentBlock.prescriptions[w][slot];
+      if (!sess) return;
+      const set = sess.exercises[exi].sets[ii];
+      set[field] = e.target.value === "" ? null : +e.target.value;
+      saveState();
+    };
+  });
+  document.querySelectorAll("[data-action=set-fb]").forEach(b => {
+    b.onclick = () => {
+      const { muscle, key, val, fbkey, when } = b.dataset;
+      const fb = state.currentBlock.feedback;
+      if (!fb[fbkey]) fb[fbkey] = { date: isoDate(new Date()) };
+      if (!fb[fbkey][when]) fb[fbkey][when] = {};
+      if (!fb[fbkey][when][muscle]) fb[fbkey][when][muscle] = {};
+      fb[fbkey][when][muscle][key] = +val;
+      saveState();
+      render();
+    };
+  });
+  document.querySelectorAll("[data-action=save-session]").forEach(b => {
+    b.onclick = () => {
+      const active = state.currentBlock.activeSlot;
+      if (!active) return;
+      const sess = state.currentBlock.prescriptions[active.weekIdx][active.slotKey];
+      sess.completedDate = isoDate(new Date());
+      const fbKey = `${active.weekIdx}|${active.slotKey}`;
+      if (!state.currentBlock.feedback[fbKey]) state.currentBlock.feedback[fbKey] = { date: sess.completedDate };
+      state.currentBlock.feedback[fbKey].date = sess.completedDate;
+      applyAutoregulation(state, active.weekIdx, active.slotKey);
+      state.currentBlock.activeSlot = null;
+      saveState();
+      alert("Session saved. Next-session prescriptions updated.");
+      render();
+    };
+  });
+
+  const unitSel = document.querySelector("[data-action=set-unit]");
+  if (unitSel) unitSel.onchange = e => { state.user.unit = e.target.value; saveState(); render(); };
+  document.querySelectorAll("[data-action=set-phase]").forEach(b => {
+    b.onclick = () => {
+      state.user.phase = b.dataset.phase;
+      saveState(); render();
+    };
+  });
+  const capInp = document.querySelector("[data-action=set-spec-cap]");
+  if (capInp) capInp.onchange = e => { state.user.specializationCap = +e.target.value || 3; saveState(); };
+
+  document.querySelectorAll("[data-action=set-target]").forEach(inp => {
+    inp.onchange = e => {
+      const kind = e.target.dataset.kind;
+      state.currentBlock.weeklyTargets[kind] = +e.target.value || 0;
+      saveState();
+      render();
+    };
+  });
+
+  document.querySelectorAll("[data-action=set-lm]").forEach(inp => {
+    inp.onchange = e => {
+      const { m, k } = e.target.dataset;
+      const v = +e.target.value;
+      if (k === "MAV0") state.landmarks[m].MAV[0] = v;
+      else if (k === "MAV1") state.landmarks[m].MAV[1] = v;
+      else state.landmarks[m][k] = v;
+      saveState();
+    };
+  });
+
+  const deBtn = document.querySelector("[data-action=trigger-deload]");
+  if (deBtn) deBtn.onclick = () => {
+    if (!confirm("Trigger an early deload? Current week becomes the deload week.")) return;
+    state.currentBlock.userCookedOverride = true;
+    saveState(); render();
+  };
+  const advBtn = document.querySelector("[data-action=advance-week]");
+  if (advBtn) advBtn.onclick = () => {
+    state.currentBlock.startDate = isoDate(new Date(Date.now() - (currentWeekIdx(state) + 1) * 7 * 86400000));
+    saveState(); render();
+  };
+  const resetBtn = document.querySelector("[data-action=reset-block]");
+  if (resetBtn) resetBtn.onclick = () => {
+    if (!confirm("Reset Block 1? Clears all logs.")) return;
+    state.currentBlock.prescriptions = {};
+    state.currentBlock.feedback = {};
+    state.currentBlock.activeSlot = null;
+    state.currentBlock.userCookedOverride = false;
+    ensureWeekBuilt(state, 0);
+    saveState(); render();
+  };
+
+  const expBtn = document.querySelector("[data-action=export-json]");
+  if (expBtn) expBtn.onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `rp-clone-${isoDate(new Date())}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  };
+  const impEl = document.querySelector("[data-action=import-json]");
+  if (impEl) impEl.onchange = e => {
+    const f = e.target.files[0]; if (!f) return;
+    const fr = new FileReader();
+    fr.onload = () => {
+      try { state = JSON.parse(fr.result); saveState(); render(); alert("Imported."); }
+      catch (err) { alert("Bad JSON: " + err.message); }
+    };
+    fr.readAsText(f);
+  };
+
+  const swapBtn = document.querySelector("[data-action=swap-glute]");
+  if (swapBtn) swapBtn.onclick = () => {
+    for (let w = 0; w < state.currentBlock.lengthWeeks; w++) {
+      ensureWeekBuilt(state, w);
+      const wkObj = state.currentBlock.prescriptions[w];
+      for (const sess of Object.values(wkObj)) {
+        if (sess.kind !== "Legs") continue;
+        sess.exercises.forEach(ex => {
+          if (ex.exId === "back_extension") { ex.exId = "hip_thrust"; ex.required = true; }
+          else if (ex.exId === "hip_thrust") { ex.exId = "back_extension"; ex.required = false; }
+        });
+      }
+    }
+    saveState(); render();
+  };
+}
+
+// ============================================================================
+// BOOT
+// ============================================================================
+
+render();
+</script>
+</body>
+</html>

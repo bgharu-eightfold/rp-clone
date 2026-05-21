@@ -466,6 +466,7 @@ function buildSlotSession(state, weekIdx, kind, instance) {
 }
 
 function ensureWeekBuilt(state, weekIdx) {
+  if (!state.currentBlock) return;
   if (!state.currentBlock.prescriptions[weekIdx]) state.currentBlock.prescriptions[weekIdx] = {};
   const wk = state.currentBlock.prescriptions[weekIdx];
   for (const sk of allSlotKeysForWeek(state.currentBlock.weeklyTargets)) {
@@ -811,13 +812,14 @@ function userTemplate() { return (state.user && state.user.template && Object.ke
 function templateForKind(kind) { return userTemplate()[kind] || []; }
 
 function currentWeekIdx(state) {
+  if (!state.currentBlock) return 0;
   const start = new Date(state.currentBlock.startDate);
   const today = new Date();
   const diffDays = Math.floor((today - start) / 86400000);
   return Math.max(0, Math.min(state.currentBlock.lengthWeeks - 1, Math.floor(diffDays / 7)));
 }
 
-ensureWeekBuilt(state, currentWeekIdx(state));
+if (state.currentBlock) ensureWeekBuilt(state, currentWeekIdx(state));
 saveState();
 
 // ============================================================================

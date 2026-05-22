@@ -8,12 +8,6 @@ No server, no internet calls, no accounts. Everything lives in your browser's `l
 
 Open `index.html` in any modern browser. First launch drops you into the onboarding wizard. Pick exercises, set base sets per exercise, define your weekly session shape, and tap "Start block."
 
-## Hosting on GitHub Pages
-
-1. Create a new repository on github.com (public or private — private requires a paid GitHub plan for Pages).
-2. Push this folder (see the steps under "Pushing to GitHub" below).
-3. In the repo on GitHub: **Settings → Pages → Source: Deploy from a branch → Branch: `main`, folder: `/ (root)` → Save**.
-4. After ~30 seconds, GitHub gives you a URL like `https://<your-username>.github.io/<repo-name>/`. Bookmark it.
 
 ## Installing as an app on iOS
 
